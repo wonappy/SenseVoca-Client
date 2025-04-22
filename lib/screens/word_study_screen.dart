@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sense_voka/widgets/end_card_widget.dart';
 
 import '../models/word_info_model.dart';
 import '../styles/white_to_orange_button_style.dart';
@@ -25,6 +26,12 @@ class _WordStudyScreenState extends State<WordStudyScreen>
   int currentIndex = 0; //현재 카드 인덱스
   bool isAnimating = false; //애니메이팅 동작 상태
   bool isLeft = true; //화살표 눌림 방향 상태 (t: 왼쪽, f: 오른쪽)
+
+  //구간 학습 완료 애니메이션 조건 변수
+  //구간 학습 완료 애니메이션 카드 용 -> true : 애니메이션 카드가 EndCard false : 애니메이션 카드가 WordCard
+  bool isSectionCompleteAnimating = false;
+  //구간 학습 완료 UI 다음 카드 용 -> true : 다음 카드가 EndCard false : 다음 카드가 WordCard
+  bool isSectionCompleteShowNext = false;
 
   //임시 데이터 [DB 역할]
   final List<WordInfoModel> dbWord = [
@@ -532,28 +539,40 @@ class _WordStudyScreenState extends State<WordStudyScreen>
         surfaceTintColor: Colors.white,
         shadowColor: Colors.black,
         elevation: 2,
-        title: RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: '${widget.sectionIndex + 1}구간  ',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
-              ),
-              TextSpan(
-                text: '${currentIndex + 1}',
-                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w800),
-              ),
-              TextSpan(
-                text: ' / ${widget.wordList.length}',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFFA45200),
+        title:
+            isSectionCompleteShowNext
+                ? Text(
+                  "${widget.sectionIndex + 1}구간 학습 완료",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.w600),
+                )
+                : RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${widget.sectionIndex + 1}구간  ',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextSpan(
+                        text: '${currentIndex + 1}',
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' / ${widget.wordList.length}',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFA45200),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ),
       ),
 
       body: Padding(
@@ -567,30 +586,46 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                 children: [
                   //현재 카드 (애니메이션 x)
                   if (!isAnimating)
-                    WordCard(word: wordInfoList[currentIndex], accent: "us"),
+                    isSectionCompleteShowNext
+                        ? EndCardWidget()
+                        : WordCard(
+                          word: wordInfoList[currentIndex],
+                          accent: "us",
+                        ),
                   //다음 카드 출력(애니메이션 중일 때)
                   if (showNext)
-                    WordCard(word: wordInfoList[nextIndex], accent: "us"),
+                    isSectionCompleteShowNext
+                        ? EndCardWidget()
+                        : isSectionCompleteAnimating
+                        ? WordCard(
+                          word: wordInfoList[currentIndex],
+                          accent: "us",
+                        )
+                        : WordCard(word: wordInfoList[nextIndex], accent: "us"),
                   //현재 카드 (애니메이션 중일 때)
                   if (isAnimating)
                     AnimatedBuilder(
                       animation: _animationController,
                       builder: (context, child) {
                         return Transform.translate(
-                          offset: _slideAnimation.value * screenWidth,
+                          offset:
+                              _slideAnimation.value * screenWidth, //위치 이동 애니메이션
                           child: Transform.rotate(
-                            angle: _rotationAnimation.value,
-                            child: WordCard(
-                              word: wordInfoList[currentIndex],
-                              accent: "us",
-                            ),
+                            angle: _rotationAnimation.value, //카드 회전 애니메이션
+                            child:
+                                isSectionCompleteAnimating && isLeft
+                                    ? EndCardWidget()
+                                    : WordCard(
+                                      word: wordInfoList[currentIndex],
+                                      accent: "us",
+                                    ),
                           ),
                         );
                       },
                     ),
 
                   // 왼쪽 화살표
-                  if (currentIndex > 0)
+                  if (isSectionCompleteShowNext || currentIndex > 0)
                     Positioned(
                       left: 0,
                       child: ElevatedButton(
@@ -600,7 +635,8 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                       ),
                     ),
                   // 오른쪽 화살표
-                  if (currentIndex < widget.wordList.length - 1)
+                  if (!isSectionCompleteShowNext &&
+                      currentIndex < widget.wordList.length)
                     Positioned(
                       right: 0,
                       child: ElevatedButton(
@@ -620,7 +656,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     );
   }
 
-  //카드 애니메이션 초기 상태 설정 (내부 함수로 사용)
+  //카드 애니메이션 초기 상태 설정
   void _setupAnimation() {
     _animationController = AnimationController(
       duration: Duration(milliseconds: 400),
@@ -645,26 +681,55 @@ class _WordStudyScreenState extends State<WordStudyScreen>
   void _changeCard(bool left) {
     if (_animationController.isAnimating || isAnimating) return;
 
+    // 구간 학습 완료 -> 마지막 인덱스
+    if (isSectionCompleteShowNext && left) {
+      setState(() {
+        isSectionCompleteShowNext = false; //다음 카드 : WordCard
+        isSectionCompleteAnimating = true; //애니메이션 카드 : EndCard
+        isAnimating = true;
+        isLeft = true;
+        _startAnimation();
+      });
+
+      _animationController.forward(from: 0).whenComplete(() {
+        setState(() {
+          isSectionCompleteAnimating = false;
+          isAnimating = false;
+        });
+      });
+
+      return;
+    }
+
     final nextIndex = currentIndex + (left ? -1 : 1);
-    if (nextIndex < 0 || nextIndex >= widget.wordList.length) return;
+
+    //마지막 인덱스 -> 구간 학습 완료
+    if (nextIndex == widget.wordList.length) {
+      setState(() {
+        isSectionCompleteAnimating = false; //애니메이션 카드 : WordCard
+        isSectionCompleteShowNext = true; //다음 카드 : EndCard
+        isAnimating = true;
+        isLeft = false;
+        _startAnimation();
+      });
+
+      _animationController.forward(from: 0).whenComplete(() {
+        setState(() {
+          isAnimating = false;
+        });
+      });
+
+      return;
+    }
+
+    ///////////일반 카드 이동 애니메이션//////////////
+    //구간 범위 벗어나지 않도록 함
+    if (nextIndex < 0 || nextIndex >= widget.wordList.length + 1) return;
 
     setState(() {
       isAnimating = true;
       isLeft = left;
-
-      _slideAnimation = Tween<Offset>(
-        begin: Offset.zero,
-        end: Offset(left ? 1.2 : -1.2, 0),
-      ).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-      );
-
-      _rotationAnimation = Tween<double>(
-        begin: 0.0,
-        end: left ? -0.1 : 0.1,
-      ).animate(
-        CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-      );
+      _startAnimation();
     });
 
     _animationController.forward(from: 0).whenComplete(() {
@@ -673,5 +738,22 @@ class _WordStudyScreenState extends State<WordStudyScreen>
         isAnimating = false;
       });
     });
+  }
+
+  //카드 이동 애니메이션
+  void _startAnimation() {
+    _slideAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset(isLeft ? 1.2 : -1.2, 0),
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: isLeft ? -0.1 : 0.1,
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 }
