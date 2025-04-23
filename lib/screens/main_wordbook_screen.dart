@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
+import 'package:sense_voka/screens/word_study_screen.dart';
 import 'package:sense_voka/widgets/word_section_widget.dart';
 
 import '../models/word_preview_model.dart';
@@ -176,6 +177,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
                       endIndex: endIndex,
                       wordCount: sectionWords.length,
                       wordList: sectionWords,
+                      onStudyFinished: _navigateNextSection,
                     ),
                   ],
                 );
@@ -185,5 +187,48 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
         ),
       ),
     );
+  }
+
+  //다음 구간 이동 (자동)
+  void _navigateNextSection(sectionInfo) {
+    if (sectionInfo['button'] == 'nextSection') {
+      final nextIndex = sectionInfo['currentIndex'] + 1;
+
+      final start = nextIndex * 10;
+      final end = (start + 10).clamp(0, wordPreviewList.length);
+
+      if (start < wordPreviewList.length) {
+        final nextWords = wordPreviewList.sublist(start, end);
+
+        //다음 학습 구간 screen 생성
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (_) => WordStudyScreen(
+                  wordList: nextWords.map((e) => e.wordId).toList(),
+                  sectionIndex: nextIndex,
+                  wordCount: nextWords.length,
+                ),
+          ),
+        );
+      } else {
+        //다음 구간이 존재하지 않을 경우 -> UI 꾸미기
+        showDialog(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: Text("단어장 학습 완료!"),
+                content: Text("단어장의 모든 구간을 학습했어요."),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("확인"),
+                  ),
+                ],
+              ),
+        );
+      }
+    }
   }
 }

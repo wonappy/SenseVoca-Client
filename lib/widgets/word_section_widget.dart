@@ -12,6 +12,8 @@ class WordSectionWidget extends StatefulWidget {
   final int endIndex;
   final int wordCount;
   final List<WordPreviewModel> wordList;
+  final void Function(Map<dynamic, dynamic>)?
+  onStudyFinished; //매개변수가 있는 콜백함수는 void Function으로 직접 정의해야 함.
 
   const WordSectionWidget({
     super.key,
@@ -20,6 +22,7 @@ class WordSectionWidget extends StatefulWidget {
     required this.endIndex,
     required this.wordCount,
     required this.wordList,
+    this.onStudyFinished,
   });
 
   @override
@@ -43,8 +46,9 @@ class _WordSectionWidgetState extends State<WordSectionWidget>
               isExpended = !isExpended;
             });
           },
-          onStartWordStudy: () {
-            Navigator.push(
+          onStartWordStudy: () async {
+            //pop될 때 값을 전달받아옴
+            final studyScreenResult = await Navigator.push(
               context,
               MaterialPageRoute(
                 builder:
@@ -59,6 +63,14 @@ class _WordSectionWidgetState extends State<WordSectionWidget>
                 fullscreenDialog: true,
               ),
             );
+
+            //result 조사해서 콜백함수 실행!!
+            if (studyScreenResult is Map &&
+                studyScreenResult['button'] == 'nextSection') {
+              widget.onStudyFinished?.call(
+                studyScreenResult,
+              ); //콜백함수.call(매개변수);
+            }
           },
         ),
         AnimatedSize(
