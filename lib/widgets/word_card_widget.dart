@@ -2,14 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_info_model.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
 import 'package:sense_voka/styles/example_sentence_style.dart';
-import 'package:sense_voka/widgets/orange_button.dart';
+import 'package:sense_voka/widgets/navigation_button_widget.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-class WordCard extends StatefulWidget {
-  final WordInfoModel word;
-  final String accent; // "us", "uk", "aus" 3가지 발음 옵션
+import 'callback_button_widget.dart';
 
-  const WordCard({super.key, required this.word, required this.accent});
+class WordCard extends StatefulWidget {
+  final WordInfoModel word; //단어 기본 정보
+  final String accent; // "us", "uk", "aus" 3가지 발음 옵션
+  final bool isRetryButtonPressed; //버튼 눌림 여부
+  final VoidCallback onRetryButtonPressed; //한 번 더 복습 버튼 눌림 콜백 함수
+
+  const WordCard({
+    super.key,
+    required this.word,
+    required this.accent,
+    required this.onRetryButtonPressed,
+    required this.isRetryButtonPressed,
+  });
 
   @override
   State<WordCard> createState() => _WordCardState();
@@ -186,18 +196,19 @@ class _WordCardState extends State<WordCard> {
             //버튼
             Column(
               children: [
-                OrangeButton(
+                NavigationButtonWidget(
                   text: "발 음 교 정",
                   bWidth: 290,
                   bHeight: 60,
                   destinationScreen: MyWordBookScreen(),
                 ),
                 SizedBox(height: 10),
-                OrangeButton(
+                CallbackButtonWidget(
                   text: "한 번 더 복습",
                   bWidth: 290,
                   bHeight: 60,
-                  destinationScreen: MyWordBookScreen(),
+                  isPressed: widget.isRetryButtonPressed,
+                  onPressed: widget.onRetryButtonPressed,
                 ),
               ],
             ),

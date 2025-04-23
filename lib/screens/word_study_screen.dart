@@ -508,6 +508,17 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     _setupAnimation(); //카드 애니메이션 초기 상태 설정
   }
 
+  //한 번 더 복습 버튼 눌림
+  void _toggleRetryWord(int wordId) {
+    setState(() {
+      if (retryWordIndex.contains(wordId)) {
+        retryWordIndex.remove(wordId); // 리스트에서 아이디 제거
+      } else {
+        retryWordIndex.add(wordId); //리스트에 아이디 추가
+      }
+    });
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -598,11 +609,17 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                         : WordCard(
                           word: wordInfoList[currentIndex],
                           accent: "us",
+                          isRetryButtonPressed: retryWordIndex.contains(
+                            currentIndex,
+                          ),
+                          onRetryButtonPressed:
+                              () => _toggleRetryWord(currentIndex),
                         ),
                   //다음 카드 출력(애니메이션 중일 때)
                   if (showNext)
                     isSectionCompleteShowNext
                         ? EndCardWidget(
+                          //다음 카드가 구간 완료 카드일 때,
                           section: widget.sectionIndex + 1,
                           wordCount: widget.wordCount,
                           completedWords: widget.wordCount - 2,
@@ -610,10 +627,25 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                         )
                         : isSectionCompleteAnimating
                         ? WordCard(
+                          //다음 카드가 구간완료 -> 마지막인덱스카드일 때,
                           word: wordInfoList[currentIndex],
                           accent: "us",
+                          isRetryButtonPressed: retryWordIndex.contains(
+                            currentIndex,
+                          ),
+                          onRetryButtonPressed:
+                              () => _toggleRetryWord(currentIndex),
                         )
-                        : WordCard(word: wordInfoList[nextIndex], accent: "us"),
+                        : WordCard(
+                          //일반 다음 카드
+                          word: wordInfoList[nextIndex],
+                          accent: "us",
+                          isRetryButtonPressed: retryWordIndex.contains(
+                            nextIndex,
+                          ),
+                          onRetryButtonPressed:
+                              () => _toggleRetryWord(nextIndex),
+                        ),
                   //현재 카드 (애니메이션 중일 때)
                   if (isAnimating)
                     AnimatedBuilder(
@@ -635,6 +667,10 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                     : WordCard(
                                       word: wordInfoList[currentIndex],
                                       accent: "us",
+                                      isRetryButtonPressed: retryWordIndex
+                                          .contains(currentIndex),
+                                      onRetryButtonPressed:
+                                          () => _toggleRetryWord(currentIndex),
                                     ),
                           ),
                         );

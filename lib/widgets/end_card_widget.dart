@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
-import 'package:sense_voka/widgets/orange_button.dart';
+import 'package:sense_voka/widgets/navigation_button_widget.dart';
 
 class EndCardWidget extends StatelessWidget {
   final int section; //구간 번호
@@ -87,14 +87,14 @@ class EndCardWidget extends StatelessWidget {
             //버튼
             Column(
               children: [
-                OrangeButton(
+                NavigationButtonWidget(
                   text: "한 번 더 복습",
                   bWidth: 290,
                   bHeight: 60,
                   destinationScreen: MyWordBookScreen(),
                 ),
                 SizedBox(height: 10),
-                OrangeButton(
+                NavigationButtonWidget(
                   text: "다음 구간 이동",
                   bWidth: 290,
                   bHeight: 60,
