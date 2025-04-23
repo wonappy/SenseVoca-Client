@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/user_model.dart';
 
-import '../widgets/orange_button.dart';
+import '../widgets/navigation_button_widget.dart';
 import 'mywordbook_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -171,28 +171,28 @@ class _MainScreenState extends State<MainScreen> {
                 ),
               ),
               SizedBox(height: 30),
-              OrangeButton(
+              NavigationButtonWidget(
                 text: "기본 제공 단어장",
                 bHeight: 90,
                 bWidth: 360,
                 destinationScreen: MyWordBookScreen(),
               ),
               SizedBox(height: 10),
-              OrangeButton(
+              NavigationButtonWidget(
                 text: "나만의 단어장",
                 bHeight: 90,
                 bWidth: 360,
                 destinationScreen: MyWordBookScreen(),
               ),
               SizedBox(height: 10),
-              OrangeButton(
+              NavigationButtonWidget(
                 text: "복습 단어장",
                 bHeight: 90,
                 bWidth: 360,
                 destinationScreen: MyWordBookScreen(),
               ),
               SizedBox(height: 10),
-              OrangeButton(
+              NavigationButtonWidget(
                 text: "단어 퀴즈",
                 bHeight: 90,
                 bWidth: 360,

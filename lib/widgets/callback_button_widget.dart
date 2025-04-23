@@ -1,35 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:sense_voka/screens/main_wordbook_screen.dart';
-import 'package:sense_voka/screens/mywordbook_screen.dart';
 
-class OrangeButton extends StatelessWidget {
+class CallbackButtonWidget extends StatefulWidget {
   final String text;
   final double bWidth;
   final double bHeight;
+  final bool isPressed;
+  final VoidCallback onPressed;
 
-  //버튼을 눌렀을 때 이동할 공간
-  final Widget destinationScreen;
-
-  const OrangeButton({
+  const CallbackButtonWidget({
     super.key,
     required this.text,
     required this.bWidth,
     required this.bHeight,
-    required this.destinationScreen,
+    required this.isPressed,
+    required this.onPressed,
   });
 
   @override
+  State<CallbackButtonWidget> createState() => _CallbackButtonWidgetState();
+}
+
+class _CallbackButtonWidgetState extends State<CallbackButtonWidget> {
+  @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => destinationScreen,
-            fullscreenDialog: true,
-          ),
-        );
-      },
+      onPressed: widget.onPressed,
       style: ButtonStyle(
         animationDuration: Duration.zero, //foregroundColor 글자 색상 변경 애니메이션 제거
         foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
@@ -37,13 +32,21 @@ class OrangeButton extends StatelessWidget {
               states.contains(WidgetState.hovered)) {
             return Colors.white;
           }
+          if (widget.isPressed) {
+            return Colors.white;
+          }
           return Colors.black;
         }),
-        backgroundColor:
-            WidgetStateProperty<Color>.fromMap(<WidgetStatesConstraint, Color>{
-              WidgetState.focused | WidgetState.hovered: Color(0xFFFF983D),
-              WidgetState.any: Colors.white,
-            }),
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+          if (states.contains(WidgetState.pressed) ||
+              states.contains(WidgetState.hovered)) {
+            return Color(0xFFFF983D);
+          }
+          if (widget.isPressed) {
+            return Color(0xFFFF983D);
+          }
+          return Colors.white;
+        }),
         overlayColor:
             WidgetStateProperty<Color>.fromMap(<WidgetStatesConstraint, Color>{
               WidgetState.focused |
@@ -51,7 +54,9 @@ class OrangeButton extends StatelessWidget {
                   WidgetState.hovered: Color(0xFFFF983D),
               WidgetState.any: Colors.white,
             }),
-        minimumSize: WidgetStateProperty.all(Size(bWidth, bHeight)),
+        minimumSize: WidgetStateProperty.all(
+          Size(widget.bWidth, widget.bHeight),
+        ),
         side: WidgetStateProperty.all(
           BorderSide(color: Color(0xFFFF983D), width: 2),
         ),
@@ -61,12 +66,8 @@ class OrangeButton extends StatelessWidget {
         elevation: WidgetStateProperty.all(5),
       ),
       child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 33,
-          fontWeight: FontWeight.w800,
-          color: Colors.black,
-        ),
+        widget.text,
+        style: TextStyle(fontSize: 33, fontWeight: FontWeight.w800),
       ),
     );
   }
