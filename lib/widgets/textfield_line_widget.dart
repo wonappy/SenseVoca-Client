@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class TextFieldLine extends StatelessWidget {
+class TextFieldLineWidget extends StatelessWidget {
   final String hint;
   final double fieldWidth;
   final double fieldHeight;
@@ -8,7 +8,7 @@ class TextFieldLine extends StatelessWidget {
   final bool obscureText;
   final TextEditingController? controller;
 
-  const TextFieldLine({
+  const TextFieldLineWidget({
     super.key,
     required this.hint,
     required this.fieldWidth,

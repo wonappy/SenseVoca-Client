@@ -13,23 +13,24 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
-  final _idController = TextEditingController(); //아이디
+  final _emailController = TextEditingController(); //아이디
   final _pwController = TextEditingController(); //비밀번호
-  String id = "", pw = "";
+  String email = "", pw = "";
 
   void _login() {
     //E/libEGL  ( 5158): called unimplemented OpenGL ES API 포커스한 채로 페이지 이동 방지
     FocusScope.of(context).unfocus();
 
-    id = _idController.text;
+    email = _emailController.text;
     pw = _pwController.text;
-    if (id == "123" && pw == "123") {
+    if (email == "123" && pw == "123") {
       Navigator.push(
         context,
         MaterialPageRoute(
           builder:
-              (context) =>
-                  MainScreen(user: UserModel(id: id, pw: pw, name: "권원경")),
+              (context) => MainScreen(
+                user: UserModel(email: email, pw: pw, name: "권원경"),
+              ),
           fullscreenDialog: true,
         ),
       );
@@ -40,7 +41,7 @@ class _SignInScreenState extends State<SignInScreen> {
 
   @override
   void dispose() {
-    _idController.dispose();
+    _emailController.dispose();
     _pwController.dispose();
     super.dispose();
   }
@@ -84,17 +85,17 @@ class _SignInScreenState extends State<SignInScreen> {
                     ),
                     SizedBox(height: 21),
                     //아이디 입력
-                    TextFieldLine(
-                      hint: "아이디를 입력해주세요.",
+                    TextFieldLineWidget(
+                      hint: "이메일을 입력해주세요.",
                       fieldHeight: 35,
                       fieldWidth: 290,
                       lineThickness: 6,
                       obscureText: false,
-                      controller: _idController,
+                      controller: _emailController,
                     ),
                     SizedBox(height: 10),
                     //비밀번호 입력
-                    TextFieldLine(
+                    TextFieldLineWidget(
                       hint: "비밀번호를 입력해주세요.",
                       fieldHeight: 35,
                       fieldWidth: 290,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
+import 'package:sense_voka/services/user_service.dart';
 
 import '../widgets/textfield_line_widget.dart';
 
@@ -11,7 +12,12 @@ class SignUpScreen extends StatefulWidget {
 }
 
 class _SignUpScreenState extends State<SignUpScreen> {
-  final List<String> _interestCategories = ["운동", "낚시", "음악"];
+  final _emailController = TextEditingController(); //이메일
+  final _pwController = TextEditingController(); //비밀번호
+  final _nameController = TextEditingController(); //닉네임
+  String email = "", pw = "", name = "";
+
+  final List<String> _interestCategories = ["운동"];
   String? _selectedInterest = "";
 
   @override
@@ -21,6 +27,40 @@ class _SignUpScreenState extends State<SignUpScreen> {
     setState(() {
       _selectedInterest = null;
     });
+  }
+
+  //회원가입 api 호출
+  void _signUpButtonTap() async {
+    final String email = _emailController.text;
+    final String pw = _pwController.text;
+    final String name = _nameController.text;
+    final int interestId = 1;
+
+    //회원가입 api 호출
+    final bool result = await UserService.pushSignUp(
+      email,
+      pw,
+      name,
+      interestId,
+    );
+
+    if (result) {
+      // 회원가입 성공
+      if (mounted) {
+        //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.
+        Navigator.pop(context);
+      }
+    } else {
+      //경고창 출력됨.
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _pwController.dispose();
+    _nameController.dispose();
+    super.dispose();
   }
 
   @override
@@ -99,12 +139,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextFieldLine(
-                          hint: "아이디를 입력해주세요.",
+                        TextFieldLineWidget(
+                          hint: "이메일을 입력해주세요.",
                           fieldHeight: 35,
                           fieldWidth: 190,
                           lineThickness: 6,
                           obscureText: false,
+                          controller: _emailController,
                         ),
                         //중복 확인 버튼
                         ElevatedButton(
@@ -134,21 +175,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     ),
                     SizedBox(height: 10),
                     //비밀번호 입력
-                    TextFieldLine(
+                    TextFieldLineWidget(
                       hint: "비밀번호를 입력해주세요.",
                       fieldHeight: 35,
                       fieldWidth: 290,
                       lineThickness: 6,
                       obscureText: true,
+                      controller: _pwController,
                     ),
                     SizedBox(height: 10),
                     //이름 입력
-                    TextFieldLine(
+                    TextFieldLineWidget(
                       hint: "이름을 입력해주세요.",
                       fieldHeight: 35,
                       fieldWidth: 290,
                       lineThickness: 6,
                       obscureText: false,
+                      controller: _nameController,
                     ),
                     SizedBox(height: 10),
                     //관심사 선택
@@ -192,11 +235,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                     SizedBox(height: 35),
-                    //로그인 버튼
+                    //회원가입 버튼
                     GestureDetector(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
+                      onTap: _signUpButtonTap,
                       child: Container(
                         height: 45,
                         width: 290,
