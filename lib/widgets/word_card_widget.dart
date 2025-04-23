@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_info_model.dart';
+import 'package:sense_voka/screens/mywordbook_screen.dart';
 import 'package:sense_voka/styles/example_sentence_style.dart';
 import 'package:sense_voka/widgets/orange_button.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -19,13 +20,13 @@ class _WordCardState extends State<WordCard> {
 
   //디바이스 tts 종류 출력
   void printAvailableVoices() async {
-    FlutterTts tts = FlutterTts();
+    //FlutterTts tts = FlutterTts();
 
-    List<dynamic> voices = await tts.getVoices;
+    //List<dynamic> voices = await tts.getVoices;
 
-    for (var voice in voices) {
-      print("목록 : $voice");
-    }
+    // for (var voice in voices) {
+    //   print("목록 : $voice");
+    // }
   }
 
   //tts 설정
@@ -185,9 +186,19 @@ class _WordCardState extends State<WordCard> {
             //버튼
             Column(
               children: [
-                OrangeButton(text: "발 음 교 정", bWidth: 290, bHeight: 60),
+                OrangeButton(
+                  text: "발 음 교 정",
+                  bWidth: 290,
+                  bHeight: 60,
+                  destinationScreen: MyWordBookScreen(),
+                ),
                 SizedBox(height: 10),
-                OrangeButton(text: "한 번 더 복습", bWidth: 290, bHeight: 60),
+                OrangeButton(
+                  text: "한 번 더 복습",
+                  bWidth: 290,
+                  bHeight: 60,
+                  destinationScreen: MyWordBookScreen(),
+                ),
               ],
             ),
           ],

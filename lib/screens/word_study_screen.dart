@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/widgets/end_card_widget.dart';
-
 import '../models/word_info_model.dart';
 import '../styles/white_to_orange_button_style.dart';
 import '../widgets/word_card_widget.dart';
@@ -24,6 +23,9 @@ class WordStudyScreen extends StatefulWidget {
 class _WordStudyScreenState extends State<WordStudyScreen>
     with TickerProviderStateMixin {
   int currentIndex = 0; //현재 카드 인덱스
+  List<int> retryWordIndex = []; //한 번 더 복습 단어 인덱스 저장 리스트
+
+  //애니메이션 동작 변수
   bool isAnimating = false; //애니메이팅 동작 상태
   bool isLeft = true; //화살표 눌림 방향 상태 (t: 왼쪽, f: 오른쪽)
 
@@ -587,7 +589,12 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                   //현재 카드 (애니메이션 x)
                   if (!isAnimating)
                     isSectionCompleteShowNext
-                        ? EndCardWidget()
+                        ? EndCardWidget(
+                          section: widget.sectionIndex + 1,
+                          wordCount: widget.wordCount,
+                          completedWords: widget.wordCount - 2,
+                          retryWords: [1, 2],
+                        )
                         : WordCard(
                           word: wordInfoList[currentIndex],
                           accent: "us",
@@ -595,7 +602,12 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                   //다음 카드 출력(애니메이션 중일 때)
                   if (showNext)
                     isSectionCompleteShowNext
-                        ? EndCardWidget()
+                        ? EndCardWidget(
+                          section: widget.sectionIndex + 1,
+                          wordCount: widget.wordCount,
+                          completedWords: widget.wordCount - 2,
+                          retryWords: [1, 2],
+                        )
                         : isSectionCompleteAnimating
                         ? WordCard(
                           word: wordInfoList[currentIndex],
@@ -614,7 +626,12 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                             angle: _rotationAnimation.value, //카드 회전 애니메이션
                             child:
                                 isSectionCompleteAnimating && isLeft
-                                    ? EndCardWidget()
+                                    ? EndCardWidget(
+                                      section: widget.sectionIndex + 1,
+                                      wordCount: widget.wordCount,
+                                      completedWords: widget.wordCount - 2,
+                                      retryWords: [1, 2],
+                                    )
                                     : WordCard(
                                       word: wordInfoList[currentIndex],
                                       accent: "us",

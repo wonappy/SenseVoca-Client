@@ -7,11 +7,15 @@ class OrangeButton extends StatelessWidget {
   final double bWidth;
   final double bHeight;
 
+  //버튼을 눌렀을 때 이동할 공간
+  final Widget destinationScreen;
+
   const OrangeButton({
     super.key,
     required this.text,
     required this.bWidth,
     required this.bHeight,
+    required this.destinationScreen,
   });
 
   @override
@@ -21,7 +25,7 @@ class OrangeButton extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => MyWordBookScreen(),
+            builder: (context) => destinationScreen,
             fullscreenDialog: true,
           ),
         );
