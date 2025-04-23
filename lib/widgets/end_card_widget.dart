@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
 import 'package:sense_voka/widgets/navigation_button_widget.dart';
 
+import 'callback_button_widget.dart';
+
 class EndCardWidget extends StatelessWidget {
   final int section; //구간 번호
   final int wordCount; //총 단어 개수
   final int completedWords; //학습 완료 단어 개수
   final List<int> retryWords; //한 번 더 복습 단어 인덱스 리스트
+
+  final VoidCallback onRetryButtonPressed; //한 번 더 복습이 눌렸을 때 콜백 함수
+  final VoidCallback onNextSectionPressed; //다음 구간 이동이 눌렸을 때 콜백 함수
 
   const EndCardWidget({
     super.key,
@@ -14,6 +19,8 @@ class EndCardWidget extends StatelessWidget {
     required this.wordCount,
     required this.completedWords,
     required this.retryWords,
+    required this.onRetryButtonPressed,
+    required this.onNextSectionPressed,
   });
 
   @override
@@ -87,18 +94,18 @@ class EndCardWidget extends StatelessWidget {
             //버튼
             Column(
               children: [
-                NavigationButtonWidget(
+                CallbackButtonWidget(
                   text: "한 번 더 복습",
                   bWidth: 290,
                   bHeight: 60,
-                  destinationScreen: MyWordBookScreen(),
+                  onPressed: onRetryButtonPressed,
                 ),
                 SizedBox(height: 10),
-                NavigationButtonWidget(
+                CallbackButtonWidget(
                   text: "다음 구간 이동",
                   bWidth: 290,
                   bHeight: 60,
-                  destinationScreen: MyWordBookScreen(),
+                  onPressed: onNextSectionPressed,
                 ),
               ],
             ),

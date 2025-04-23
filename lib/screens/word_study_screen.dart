@@ -23,7 +23,7 @@ class WordStudyScreen extends StatefulWidget {
 class _WordStudyScreenState extends State<WordStudyScreen>
     with TickerProviderStateMixin {
   int currentIndex = 0; //현재 카드 인덱스
-  List<int> retryWordIndex = []; //한 번 더 복습 단어 인덱스 저장 리스트
+  List<int> retryWordList = []; //한 번 더 복습 단어 인덱스 저장 리스트
 
   //애니메이션 동작 변수
   bool isAnimating = false; //애니메이팅 동작 상태
@@ -508,16 +508,40 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     _setupAnimation(); //카드 애니메이션 초기 상태 설정
   }
 
-  //한 번 더 복습 버튼 눌림
+  //한 번 더 복습 버튼이 눌렸을 때 콜백 함수
   void _toggleRetryWord(int wordId) {
     setState(() {
-      if (retryWordIndex.contains(wordId)) {
-        retryWordIndex.remove(wordId); // 리스트에서 아이디 제거
+      if (retryWordList.contains(wordId)) {
+        retryWordList.remove(wordId); // 리스트에서 아이디 제거
       } else {
-        retryWordIndex.add(wordId); //리스트에 아이디 추가
+        retryWordList.add(wordId); //리스트에 아이디 추가
       }
     });
   }
+
+  //구간 완료 콜백함수
+  //한 번 더 복습 버튼
+  void _retrySection() {
+    Navigator.pop(context);
+    //addPostFrameCallback : pop 작업이 끝난 이후, 안전하게 다음 화면 생성
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => WordStudyScreen(
+                wordList: retryWordList,
+                sectionIndex: widget.sectionIndex,
+                wordCount: retryWordList.length,
+              ),
+          fullscreenDialog: true,
+        ),
+      );
+    });
+  }
+
+  //다음 구간 이동 콜백 버튼
+  void _nextSection() {}
 
   @override
   void dispose() {
@@ -603,17 +627,22 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                         ? EndCardWidget(
                           section: widget.sectionIndex + 1,
                           wordCount: widget.wordCount,
-                          completedWords: widget.wordCount - 2,
-                          retryWords: [1, 2],
+                          completedWords:
+                              widget.wordCount - retryWordList.length,
+                          retryWords: retryWordList,
+                          onRetryButtonPressed: () => _retrySection(),
+                          onNextSectionPressed: () {},
                         )
                         : WordCard(
                           word: wordInfoList[currentIndex],
                           accent: "us",
-                          isRetryButtonPressed: retryWordIndex.contains(
-                            currentIndex,
+                          isRetryButtonPressed: retryWordList.contains(
+                            wordInfoList[currentIndex].wordId,
                           ),
                           onRetryButtonPressed:
-                              () => _toggleRetryWord(currentIndex),
+                              () => _toggleRetryWord(
+                                wordInfoList[currentIndex].wordId,
+                              ),
                         ),
                   //다음 카드 출력(애니메이션 중일 때)
                   if (showNext)
@@ -622,16 +651,19 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                           //다음 카드가 구간 완료 카드일 때,
                           section: widget.sectionIndex + 1,
                           wordCount: widget.wordCount,
-                          completedWords: widget.wordCount - 2,
-                          retryWords: [1, 2],
+                          completedWords:
+                              widget.wordCount - retryWordList.length,
+                          retryWords: retryWordList,
+                          onRetryButtonPressed: () {},
+                          onNextSectionPressed: () {},
                         )
                         : isSectionCompleteAnimating
                         ? WordCard(
                           //다음 카드가 구간완료 -> 마지막인덱스카드일 때,
                           word: wordInfoList[currentIndex],
                           accent: "us",
-                          isRetryButtonPressed: retryWordIndex.contains(
-                            currentIndex,
+                          isRetryButtonPressed: retryWordList.contains(
+                            wordInfoList[currentIndex].wordId,
                           ),
                           onRetryButtonPressed:
                               () => _toggleRetryWord(currentIndex),
@@ -640,8 +672,8 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                           //일반 다음 카드
                           word: wordInfoList[nextIndex],
                           accent: "us",
-                          isRetryButtonPressed: retryWordIndex.contains(
-                            nextIndex,
+                          isRetryButtonPressed: retryWordList.contains(
+                            wordInfoList[nextIndex].wordId,
                           ),
                           onRetryButtonPressed:
                               () => _toggleRetryWord(nextIndex),
@@ -661,14 +693,20 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                     ? EndCardWidget(
                                       section: widget.sectionIndex + 1,
                                       wordCount: widget.wordCount,
-                                      completedWords: widget.wordCount - 2,
-                                      retryWords: [1, 2],
+                                      completedWords:
+                                          widget.wordCount -
+                                          retryWordList.length,
+                                      retryWords: retryWordList,
+                                      onRetryButtonPressed: () {},
+                                      onNextSectionPressed: () {},
                                     )
                                     : WordCard(
                                       word: wordInfoList[currentIndex],
                                       accent: "us",
-                                      isRetryButtonPressed: retryWordIndex
-                                          .contains(currentIndex),
+                                      isRetryButtonPressed: retryWordList
+                                          .contains(
+                                            wordInfoList[currentIndex].wordId,
+                                          ),
                                       onRetryButtonPressed:
                                           () => _toggleRetryWord(currentIndex),
                                     ),

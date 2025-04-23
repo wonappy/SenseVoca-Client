@@ -4,7 +4,7 @@ class CallbackButtonWidget extends StatefulWidget {
   final String text;
   final double bWidth;
   final double bHeight;
-  final bool isPressed;
+  final bool? isPressed;
   final VoidCallback onPressed;
 
   const CallbackButtonWidget({
@@ -12,7 +12,7 @@ class CallbackButtonWidget extends StatefulWidget {
     required this.text,
     required this.bWidth,
     required this.bHeight,
-    required this.isPressed,
+    this.isPressed,
     required this.onPressed,
   });
 
@@ -32,21 +32,30 @@ class _CallbackButtonWidgetState extends State<CallbackButtonWidget> {
               states.contains(WidgetState.hovered)) {
             return Colors.white;
           }
-          if (widget.isPressed) {
+          if (widget.isPressed == true) {
             return Colors.white;
           }
           return Colors.black;
         }),
-        backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
-          if (states.contains(WidgetState.pressed) ||
-              states.contains(WidgetState.hovered)) {
-            return Color(0xFFFF983D);
-          }
-          if (widget.isPressed) {
-            return Color(0xFFFF983D);
-          }
-          return Colors.white;
-        }),
+        backgroundColor:
+            (widget.isPressed == null)
+                ? WidgetStateProperty<Color>.fromMap(<
+                  WidgetStatesConstraint,
+                  Color
+                >{
+                  WidgetState.focused | WidgetState.hovered: Color(0xFFFF983D),
+                  WidgetState.any: Colors.white,
+                })
+                : WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.pressed) ||
+                      states.contains(WidgetState.hovered)) {
+                    return Color(0xFFFF983D);
+                  }
+                  if (widget.isPressed == true) {
+                    return Color(0xFFFF983D);
+                  }
+                  return Colors.white;
+                }),
         overlayColor:
             WidgetStateProperty<Color>.fromMap(<WidgetStatesConstraint, Color>{
               WidgetState.focused |
