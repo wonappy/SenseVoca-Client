@@ -131,7 +131,7 @@ class EndCardWidget extends StatelessWidget {
           ),
           TextSpan(
             text: "개",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
         ],
       ),
