@@ -126,7 +126,9 @@ class UserService {
         body: jsonEncode({'email': email, 'password': pw}),
       );
 
-      final dynamic result = jsonDecode(response.body);
+      final dynamic result = jsonDecode(
+        response.body,
+      ); //로그인 실패 시, 응답이 없어서 error로 분류!!!!
 
       //회원가입 성공
       if (response.statusCode == 200) {
