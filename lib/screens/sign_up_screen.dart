@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:sense_voka/models/api_response.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
 import 'package:sense_voka/services/user_service.dart';
 
+import '../styles/error_snack_bar_style.dart';
+import '../widgets/show_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -29,6 +32,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
     });
   }
 
+  //이메일 중복 확인 api 호출
+  void _emailCheckButtonTap() async {
+    final String email = _emailController.text;
+
+    //api 호출
+    final ApiResponseModel result = await UserService.getCheckEmailDuplicate(
+      email,
+    );
+
+    if (mounted) {
+      if (result.isSuccess) {
+        // 사용 가능한 이메일
+        //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.
+        await showDialogWidget(
+          context: context,
+          title: result.title,
+          msg: result.msg,
+        );
+      } else {
+        //경고창 출력됨.
+        //api 호출 에러
+        if (result.title == "오류 발생") {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        }
+        //결과 실패
+        else {
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
+  }
+
   //회원가입 api 호출
   void _signUpButtonTap() async {
     final String email = _emailController.text;
@@ -36,23 +77,54 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String name = _nameController.text;
     final int interestId = 1;
 
+    if (email == "" || pw == "" || name == "") {
+      await showDialogWidget(
+        context: context,
+        title: "필수 요소 입력",
+        msg: "모든 정보를 입력해주세요.",
+      );
+      return;
+    }
+
     //회원가입 api 호출
-    final bool result = await UserService.pushSignUp(
+    final ApiResponseModel result = await UserService.postSignUp(
       email,
       pw,
       name,
       interestId,
     );
 
-    if (result) {
-      // 회원가입 성공
-      if (mounted) {
-        //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.
-        Navigator.pop(context);
+    if (mounted) {
+      //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.
+      if (result.isSuccess) {
+        // 회원가입 성공
+        await showDialogWidget(
+          context: context,
+          title: result.title,
+          msg: result.msg,
+        );
+        if (mounted) {
+          Navigator.pop(context);
+        }
+      } else {
+        if (result.title == "오류 발생") {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else {
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
       }
-    } else {
-      //경고창 출력됨.
     }
+
+    _emailController.text = "";
+    _nameController.text = "";
+    _pwController.text = "";
+    _selectedInterest = null;
   }
 
   @override
@@ -149,7 +221,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                         //중복 확인 버튼
                         ElevatedButton(
-                          onPressed: () {},
+                          onPressed: _emailCheckButtonTap,
                           style: ButtonStyle(
                             backgroundColor: WidgetStateProperty.all(
                               Color(0xFFFF983D),
