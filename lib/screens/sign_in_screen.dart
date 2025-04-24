@@ -1,8 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sense_voka/screens/main_screen.dart';
 import 'package:sense_voka/screens/sign_up_screen.dart';
+import 'package:sense_voka/services/user_service.dart';
 
-import '../models/user_model.dart';
+import '../styles/error_snack_bar_style.dart';
+import '../widgets/show_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -13,30 +17,84 @@ class SignInScreen extends StatefulWidget {
 }
 
 class _SignInScreenState extends State<SignInScreen> {
+  static final storage = FlutterSecureStorage();
+
   final _emailController = TextEditingController(); //아이디
   final _pwController = TextEditingController(); //비밀번호
   String email = "", pw = "";
 
-  void _login() {
-    //E/libEGL  ( 5158): called unimplemented OpenGL ES API 포커스한 채로 페이지 이동 방지
-    FocusScope.of(context).unfocus();
-
+  void _loginButtonTap() async {
     email = _emailController.text;
     pw = _pwController.text;
-    if (email == "123" && pw == "123") {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => MainScreen(
-                user: UserModel(email: email, pw: pw, name: "권원경"),
-              ),
-          fullscreenDialog: true,
-        ),
+
+    if (email == "") {
+      await showDialogWidget(
+        context: context,
+        title: "필수 요소 입력",
+        msg: "이메일을 입력해주세요.",
       );
-    } else {
-      //print("로그인 불가");
+      return;
+    } else if (pw == "") {
+      await showDialogWidget(
+        context: context,
+        title: "필수 요소 입력",
+        msg: "비밀번호를 입력해주세요.",
+      );
+      return;
     }
+
+    //api 호출
+    var (result, user) = await UserService.postSignIn(email: email, pw: pw);
+
+    if (mounted) {
+      //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.
+      if (result.isSuccess && user != null) {
+        if (kDebugMode) {
+          Map<String, String> allValues = await storage.readAll();
+          print(
+            "로그인한 사용자 정보 : ${user.email}, ${user.name}, ${user.pw}, ${user.userId}, ${user.accessToken}, ",
+          );
+          print("토큰 정보 : $allValues");
+        }
+
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainScreen(user: user),
+              fullscreenDialog: true,
+            ),
+          );
+        }
+      } else {
+        if (result.title == "오류 발생") {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else {
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
+
+    // if (email == "123" && pw == "123") {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder:
+    //           (context) => MainScreen(
+    //             user: UserModel(userId: 1, email: email, pw: pw, name: "권원경"),
+    //           ),
+    //       fullscreenDialog: true,
+    //     ),
+    //   );
+    // } else {
+    //   //print("로그인 불가");
+    // }
   }
 
   @override
@@ -106,7 +164,7 @@ class _SignInScreenState extends State<SignInScreen> {
                     SizedBox(height: 35),
                     //로그인 버튼
                     GestureDetector(
-                      onTap: () => _login(),
+                      onTap: () => _loginButtonTap(),
                       child: Container(
                         height: 45,
                         width: 290,

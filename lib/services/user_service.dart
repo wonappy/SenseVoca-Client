@@ -1,9 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:sense_voka/models/api_response.dart';
+import 'package:sense_voka/models/user_model.dart';
 
 class UserService {
+  // Create storage
+  static final storage = FlutterSecureStorage();
   static const String baseUrl = "http://192.168.1.47:8080/api/users";
 
   //이메일 중복 확인
@@ -104,6 +108,68 @@ class UserService {
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return returnMsg;
+    }
+  }
+
+  //로그인
+  static Future<(ApiResponseModel, UserModel?)> postSignIn({
+    required String email,
+    required String pw,
+  }) async {
+    final url = Uri.parse('$baseUrl/login');
+    ApiResponseModel returnMsg;
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': pw}),
+      );
+
+      final dynamic result = jsonDecode(response.body);
+
+      //회원가입 성공
+      if (response.statusCode == 200) {
+        final dynamic data = result['data'];
+        if (kDebugMode) {
+          print('로그인 성공 - ${result['message']}');
+        }
+
+        //사용자 객체 생성
+        UserModel user = UserModel.fromJsonWithCustom(
+          json: data,
+          name: "권원경",
+          email: email,
+          password: pw,
+        );
+
+        //토큰 로컬 저장
+        await storage.write(key: "AccessToken", value: data['accessToken']);
+        await storage.write(key: "RefreshToken", value: data['refreshToken']);
+
+        returnMsg = ApiResponseModel(
+          isSuccess: true,
+          title: "로그인 성공",
+          msg: "${result['message']}",
+        );
+        return (returnMsg, user);
+      } else {
+        if (kDebugMode) {
+          print('로그인 실패 - ${result['message']}');
+        }
+        returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "로그인 실패",
+          msg: "${result['message']}",
+        );
+        return (returnMsg, null);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('예외 발생: [postSignIn] $e');
+      }
+      returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
+      return (returnMsg, null);
     }
   }
 }
