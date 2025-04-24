@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sense_voka/widgets/end_card_widget.dart';
 import '../models/word_info_model.dart';
 import '../styles/white_to_orange_button_style.dart';
+import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_card_widget.dart';
 
 class WordStudyScreen extends StatefulWidget {
@@ -521,23 +522,37 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
   //구간 완료 콜백함수
   //한 번 더 복습 버튼
-  void _retrySection() {
-    Navigator.pop(context);
-    //addPostFrameCallback : pop 작업이 끝난 이후, 안전하게 다음 화면 생성
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => WordStudyScreen(
-                wordList: retryWordList,
-                sectionIndex: widget.sectionIndex,
-                wordCount: retryWordList.length,
-              ),
-          fullscreenDialog: true,
-        ),
+  void _retrySection() async {
+    if (retryWordList.isEmpty) {
+      await showDialogWidget(
+        context: context,
+        title: "학습 완료",
+        msg: "복습할 단어가 존재하지 않습니다.\n다음 구간으로 이동해주세요!",
       );
+      return;
+    }
+
+    Navigator.pop(context, {
+      'button': 'retry',
+      'currentIndex': widget.sectionIndex,
+      'wordList': retryWordList,
     });
+
+    //addPostFrameCallback : pop 작업이 끝난 이후, 안전하게 다음 화면 생성
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //       builder:
+    //           (context) => WordStudyScreen(
+    //             wordList: retryWordList,
+    //             sectionIndex: widget.sectionIndex,
+    //             wordCount: retryWordList.length,
+    //           ),
+    //       fullscreenDialog: true,
+    //     ),
+    //   );
+    // });
   }
 
   //다음 구간 이동 콜백 버튼 => 한 번 더 복습과 헷갈리지 않게 버튼 종류와 현재 섹션인덱스 값 전달

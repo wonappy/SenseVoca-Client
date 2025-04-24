@@ -119,7 +119,7 @@ class EndCardWidget extends StatelessWidget {
     return Text.rich(
       TextSpan(
         text: "$explanation : ",
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+        style: TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
         children: [
           TextSpan(
             text: "$num",

@@ -80,21 +80,6 @@ class _SignInScreenState extends State<SignInScreen> {
         }
       }
     }
-
-    // if (email == "123" && pw == "123") {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder:
-    //           (context) => MainScreen(
-    //             user: UserModel(userId: 1, email: email, pw: pw, name: "권원경"),
-    //           ),
-    //       fullscreenDialog: true,
-    //     ),
-    //   );
-    // } else {
-    //   //print("로그인 불가");
-    // }
   }
 
   @override
@@ -206,6 +191,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         SizedBox(width: 7),
                         GestureDetector(
                           onTap: () {
+                            email = "";
+                            pw = "";
                             Navigator.push(
                               context,
                               MaterialPageRoute(

@@ -4,6 +4,7 @@ import 'package:sense_voka/screens/word_study_screen.dart';
 import 'package:sense_voka/widgets/word_section_widget.dart';
 
 import '../models/word_preview_model.dart';
+import '../widgets/show_dialog_widget.dart';
 
 class MainWordBookScreen extends StatefulWidget {
   final String setName;
@@ -177,7 +178,11 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
                       endIndex: endIndex,
                       wordCount: sectionWords.length,
                       wordList: sectionWords,
-                      onStudyFinished: _navigateNextSection,
+                      onStudyFinished:
+                          () => _startStudyScreen(
+                            wordList: sectionWords,
+                            sectionIndex: i,
+                          ),
                     ),
                   ],
                 );
@@ -189,9 +194,36 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     );
   }
 
-  //다음 구간 이동 (자동)
-  void _navigateNextSection(sectionInfo) {
-    if (sectionInfo['button'] == 'nextSection') {
+  //위젯 버튼으로 화면 생성 (수동)
+  void _startStudyScreen({
+    required List<WordPreviewModel> wordList,
+    required int sectionIndex,
+  }) async {
+    final studyScreenResult = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => WordStudyScreen(
+              wordList: wordList.map((e) => e.wordId).toList(), //단어 Id만 넘김
+              sectionIndex: sectionIndex,
+              wordCount: widget.wordCount,
+            ),
+        fullscreenDialog: true,
+      ),
+    );
+
+    //result 조사해서 다음 화면 실행!!
+    if (studyScreenResult is Map) {
+      _navigateStudyScreen(studyScreenResult);
+    }
+  }
+
+  //다음 구간 이동, 한 번 더 학습으로 인한 변경된 학습 화면 생성 (자동)
+  void _navigateStudyScreen(sectionInfo) async {
+    String button = sectionInfo['button'];
+
+    //다음 구간 이동
+    if (button == 'nextSection') {
       final nextIndex = sectionInfo['currentIndex'] + 1;
 
       final start = nextIndex * 10;
@@ -200,8 +232,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       if (start < wordPreviewList.length) {
         final nextWords = wordPreviewList.sublist(start, end);
 
-        //다음 학습 구간 screen 생성
-        Navigator.push(
+        final studyScreenResult = await Navigator.push(
           context,
           MaterialPageRoute(
             builder:
@@ -212,22 +243,40 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
                 ),
           ),
         );
+
+        if (studyScreenResult is Map) {
+          _navigateStudyScreen(studyScreenResult);
+        }
       } else {
         //다음 구간이 존재하지 않을 경우 -> UI 꾸미기
-        showDialog(
+        showDialogWidget(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: Text("단어장 학습 완료!"),
-                content: Text("단어장의 모든 구간을 학습했어요."),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text("확인"),
-                  ),
-                ],
-              ),
+          title: "단어장 학습 완료!",
+          msg: "단어장의 모든 구간을 학습했어요.",
         );
+      }
+    }
+    //한 번 더 학습
+    else if (button == 'retry') {
+      //인덱스 리스트 캐스팅!!
+      final List<dynamic> rawList = sectionInfo['wordList'];
+      final retryWordList = rawList.cast<int>();
+
+      final studyScreenResult = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder:
+              (context) => WordStudyScreen(
+                wordList: retryWordList,
+                sectionIndex: sectionInfo['currentIndex'],
+                wordCount: retryWordList.length,
+              ),
+          fullscreenDialog: true,
+        ),
+      );
+
+      if (studyScreenResult is Map) {
+        _navigateStudyScreen(studyScreenResult);
       }
     }
   }
