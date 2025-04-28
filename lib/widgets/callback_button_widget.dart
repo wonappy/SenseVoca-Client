@@ -5,7 +5,7 @@ class CallbackButtonWidget extends StatefulWidget {
   final double bWidth;
   final double bHeight;
   final bool? isPressed;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   const CallbackButtonWidget({
     super.key,
@@ -13,7 +13,7 @@ class CallbackButtonWidget extends StatefulWidget {
     required this.bWidth,
     required this.bHeight,
     this.isPressed,
-    required this.onPressed,
+    this.onPressed,
   });
 
   @override
