@@ -4,7 +4,6 @@ import 'package:sense_voka/widgets/word_section_body.dart';
 import 'package:sense_voka/widgets/word_section_header.dart';
 
 import '../models/word_preview_model.dart';
-import '../screens/word_study_screen.dart';
 
 class WordSectionWidget extends StatefulWidget {
   final int sectionIndex;
@@ -13,8 +12,6 @@ class WordSectionWidget extends StatefulWidget {
   final int wordCount;
   final List<WordPreviewModel> wordList;
   final VoidCallback onStudyFinished;
-  // final void Function(Map<dynamic, dynamic>)?
-  // onStudyFinished; //매개변수가 있는 콜백함수는 void Function으로 직접 정의해야 함.
 
   const WordSectionWidget({
     super.key,

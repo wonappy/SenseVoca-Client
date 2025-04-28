@@ -8,13 +8,11 @@ import '../widgets/word_card_widget.dart';
 class WordStudyScreen extends StatefulWidget {
   final List<int> wordList;
   final int sectionIndex;
-  final int wordCount;
 
   const WordStudyScreen({
     super.key,
     required this.wordList,
     required this.sectionIndex,
-    required this.wordCount,
   });
 
   @override
@@ -23,6 +21,8 @@ class WordStudyScreen extends StatefulWidget {
 
 class _WordStudyScreenState extends State<WordStudyScreen>
     with TickerProviderStateMixin {
+  int wordCount = -1; //구간 내 단어 개수
+
   int currentIndex = 0; //현재 카드 인덱스
   List<int> retryWordList = []; //한 번 더 복습 단어 인덱스 저장 리스트
 
@@ -505,6 +505,8 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     // 선택된 단어의 인덱스로 검색해서 구간 내 단어 정보 리스트 생성
     wordInfoList =
         dbWord.where((word) => widget.wordList.contains(word.wordId)).toList();
+    //구간 내 단어 개수
+    wordCount = widget.wordList.length;
 
     _setupAnimation(); //카드 애니메이션 초기 상태 설정
   }
@@ -620,7 +622,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                         ),
                       ),
                       TextSpan(
-                        text: ' / ${widget.wordList.length}',
+                        text: ' / $wordCount',
                         style: TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.w600,
@@ -646,9 +648,8 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                     isSectionCompleteShowNext
                         ? EndCardWidget(
                           section: widget.sectionIndex + 1,
-                          wordCount: widget.wordCount,
-                          completedWords:
-                              widget.wordCount - retryWordList.length,
+                          wordCount: wordCount,
+                          completedWords: wordCount - retryWordList.length,
                           retryWords: retryWordList,
                           onRetryButtonPressed: () => _retrySection(),
                           onNextSectionPressed: () => _nextSection(),
@@ -670,12 +671,11 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                         ? EndCardWidget(
                           //다음 카드가 구간 완료 카드일 때,
                           section: widget.sectionIndex + 1,
-                          wordCount: widget.wordCount,
-                          completedWords:
-                              widget.wordCount - retryWordList.length,
+                          wordCount: wordCount,
+                          completedWords: wordCount - retryWordList.length,
                           retryWords: retryWordList,
-                          onRetryButtonPressed: () {},
-                          onNextSectionPressed: () {},
+                          onRetryButtonPressed: null,
+                          onNextSectionPressed: null,
                         )
                         : isSectionCompleteAnimating
                         ? WordCard(
@@ -712,13 +712,12 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                 isSectionCompleteAnimating && isLeft
                                     ? EndCardWidget(
                                       section: widget.sectionIndex + 1,
-                                      wordCount: widget.wordCount,
+                                      wordCount: wordCount,
                                       completedWords:
-                                          widget.wordCount -
-                                          retryWordList.length,
+                                          wordCount - retryWordList.length,
                                       retryWords: retryWordList,
-                                      onRetryButtonPressed: () {},
-                                      onNextSectionPressed: () {},
+                                      onRetryButtonPressed: null,
+                                      onNextSectionPressed: null,
                                     )
                                     : WordCard(
                                       word: wordInfoList[currentIndex],
@@ -746,8 +745,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                       ),
                     ),
                   // 오른쪽 화살표
-                  if (!isSectionCompleteShowNext &&
-                      currentIndex < widget.wordList.length)
+                  if (!isSectionCompleteShowNext && currentIndex < wordCount)
                     Positioned(
                       right: 0,
                       child: ElevatedButton(
@@ -774,18 +772,19 @@ class _WordStudyScreenState extends State<WordStudyScreen>
       vsync: this,
     );
 
-    //카드 이동 방향 애니메이션
-    _slideAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-
-    //카드 이동 시 둥글게 이동하는 애니메이션
-    _rotationAnimation = Tween<double>(begin: 0, end: 0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
+    // 초기화 코드는 굳이 필요 없다.
+    // //카드 이동 방향 애니메이션
+    // _slideAnimation = Tween<Offset>(
+    //   begin: Offset.zero,
+    //   end: Offset.zero,
+    // ).animate(
+    //   CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    // );
+    //
+    // //카드 이동 시 둥글게 이동하는 애니메이션
+    // _rotationAnimation = Tween<double>(begin: 0, end: 0).animate(
+    //   CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    // );
   }
 
   //화살표 버튼 -> 애니메이션 결정
@@ -815,7 +814,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     final nextIndex = currentIndex + (left ? -1 : 1);
 
     //마지막 인덱스 -> 구간 학습 완료
-    if (nextIndex == widget.wordList.length) {
+    if (nextIndex == wordCount) {
       setState(() {
         isSectionCompleteAnimating = false; //애니메이션 카드 : WordCard
         isSectionCompleteShowNext = true; //다음 카드 : EndCard
@@ -835,7 +834,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
     ///////////일반 카드 이동 애니메이션//////////////
     //구간 범위 벗어나지 않도록 함
-    if (nextIndex < 0 || nextIndex >= widget.wordList.length + 1) return;
+    if (nextIndex < 0 || nextIndex >= wordCount + 1) return;
 
     setState(() {
       isAnimating = true;

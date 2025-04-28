@@ -182,6 +182,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
                           () => _startStudyScreen(
                             wordList: sectionWords,
                             sectionIndex: i,
+                            wordCount: sectionWords.length,
                           ),
                     ),
                   ],
@@ -198,24 +199,12 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
   void _startStudyScreen({
     required List<WordPreviewModel> wordList,
     required int sectionIndex,
+    required int wordCount,
   }) async {
-    final studyScreenResult = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder:
-            (context) => WordStudyScreen(
-              wordList: wordList.map((e) => e.wordId).toList(), //단어 Id만 넘김
-              sectionIndex: sectionIndex,
-              wordCount: widget.wordCount,
-            ),
-        fullscreenDialog: true,
-      ),
+    await _createNewStudyScreen(
+      wordList: wordList.map((e) => e.wordId).toList(),
+      sectionIndex: sectionIndex,
     );
-
-    //result 조사해서 다음 화면 실행!!
-    if (studyScreenResult is Map) {
-      _navigateStudyScreen(studyScreenResult);
-    }
   }
 
   //다음 구간 이동, 한 번 더 학습으로 인한 변경된 학습 화면 생성 (자동)
@@ -232,23 +221,12 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       if (start < wordPreviewList.length) {
         final nextWords = wordPreviewList.sublist(start, end);
 
-        final studyScreenResult = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder:
-                (_) => WordStudyScreen(
-                  wordList: nextWords.map((e) => e.wordId).toList(),
-                  sectionIndex: nextIndex,
-                  wordCount: nextWords.length,
-                ),
-          ),
+        await _createNewStudyScreen(
+          wordList: nextWords.map((e) => e.wordId).toList(),
+          sectionIndex: nextIndex,
         );
-
-        if (studyScreenResult is Map) {
-          _navigateStudyScreen(studyScreenResult);
-        }
       } else {
-        //다음 구간이 존재하지 않을 경우 -> UI 꾸미기
+        //다음 구간이 존재하지 않을 경우 경고창 출력
         showDialogWidget(
           context: context,
           title: "단어장 학습 완료!",
@@ -260,24 +238,35 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     else if (button == 'retry') {
       //인덱스 리스트 캐스팅!!
       final List<dynamic> rawList = sectionInfo['wordList'];
-      final retryWordList = rawList.cast<int>();
+      final retryWordList = rawList.cast<int>(); //int로 형 변환
 
-      final studyScreenResult = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder:
-              (context) => WordStudyScreen(
-                wordList: retryWordList,
-                sectionIndex: sectionInfo['currentIndex'],
-                wordCount: retryWordList.length,
-              ),
-          fullscreenDialog: true,
-        ),
+      await _createNewStudyScreen(
+        wordList: retryWordList,
+        sectionIndex: sectionInfo['currentIndex'],
       );
+    }
+  }
 
-      if (studyScreenResult is Map) {
-        _navigateStudyScreen(studyScreenResult);
-      }
+  //단어 학습 화면 생성
+  Future<void> _createNewStudyScreen({
+    required List<int> wordList,
+    required int sectionIndex,
+  }) async {
+    final studyScreenResult = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) => WordStudyScreen(
+              wordList: wordList, //단어 Id리스트
+              sectionIndex: sectionIndex, //구간 인덱스
+            ),
+        fullscreenDialog: true,
+      ),
+    );
+
+    //result 조사해서 다음 화면 실행!!
+    if (studyScreenResult is Map) {
+      _navigateStudyScreen(studyScreenResult);
     }
   }
 }
