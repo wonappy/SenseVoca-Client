@@ -8,7 +8,7 @@ import 'package:sense_voka/models/user_model.dart';
 class UserService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://192.168.222.73:8080/api/users";
+  static const String baseUrl = "http://10.101.68.143:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
@@ -20,9 +20,9 @@ class UserService {
 
       final dynamic result = jsonDecode(response.body);
 
-      // print("🔥 [응답 상태] ${response.statusCode}");
-      // print("🔥 [응답 본문] '${response.body}'");
-      // print("🔥 [본문 길이] ${response.body.length}");
+      // print("[응답 상태] ${response.statusCode}");
+      // print("[응답 본문] '${response.body}'");
+      // print("[본문 길이] ${response.body.length}");
 
       //중복되지 않은 이메일
       if (response.statusCode == 200 && result['data'] == false) {
@@ -119,6 +119,9 @@ class UserService {
     final url = Uri.parse('$baseUrl/login');
     ApiResponseModel returnMsg;
 
+    //기존 저장소 내용 모두 삭제 -> 환경설정 내용은 그럼 어떻게 가져올 수 있징...
+    storage.deleteAll();
+
     try {
       final response = await http.post(
         url,
@@ -142,12 +145,17 @@ class UserService {
           json: data,
           name: "권원경",
           email: email,
-          password: pw,
         );
 
         //토큰 로컬 저장
         await storage.write(key: "AccessToken", value: data['accessToken']);
         await storage.write(key: "RefreshToken", value: data['refreshToken']);
+        final userJson = jsonEncode({
+          'userId': user.userId,
+          'email': user.email,
+          'name': user.name,
+        });
+        await storage.write(key: "UserInfo", value: userJson);
 
         returnMsg = ApiResponseModel(
           isSuccess: true,
