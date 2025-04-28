@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -5,6 +7,7 @@ import 'package:sense_voka/screens/main_screen.dart';
 import 'package:sense_voka/screens/sign_up_screen.dart';
 import 'package:sense_voka/services/user_service.dart';
 
+import '../models/user_model.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
@@ -23,6 +26,46 @@ class _SignInScreenState extends State<SignInScreen> {
   final _pwController = TextEditingController(); //비밀번호
   String email = "", pw = "";
 
+  @override
+  void initState() {
+    super.initState();
+    _autoSingIn();
+  }
+
+  //자동 로그인 -> 함수로 빼서 전체적인 흐름이 잘 보이게 변경 필요
+  void _autoSingIn() async {
+    //Token값들이 존재한다면,
+    if (await storage.read(key: "RefreshToken") != null &&
+        await storage.read(key: "AccessToken") != null) {
+      final accessToken = await storage.read(key: "AccessToken");
+      //accessToken 유효성 확인 api
+      //승인 -> 아래 절차 진행
+      //거부 -> RefreshToken으로 accessToken 재발급
+      //재발급도 실패하면 storage 모두 삭제!
+
+      final userJson = await storage.read(key: "UserInfo");
+      if (accessToken != null && userJson != null) {
+        //저장되어있던 사용자 정보 가져오기
+        final userMap = jsonDecode(userJson);
+        final user = UserModel(
+          userId: userMap['userId'],
+          email: userMap['email'],
+          name: userMap['name'],
+          accessToken: accessToken,
+        );
+
+        //자동 로그인
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => MainScreen(user: user)),
+          );
+        }
+      }
+    }
+  }
+
+  //로그인 API
   void _loginButtonTap() async {
     email = _emailController.text;
     pw = _pwController.text;
@@ -52,7 +95,7 @@ class _SignInScreenState extends State<SignInScreen> {
         if (kDebugMode) {
           Map<String, String> allValues = await storage.readAll();
           print(
-            "로그인한 사용자 정보 : ${user.email}, ${user.name}, ${user.pw}, ${user.userId}, ${user.accessToken}, ",
+            "로그인한 사용자 정보 : ${user.email}, ${user.name}, ${user.userId}, ${user.accessToken}, ",
           );
           print("토큰 정보 : $allValues");
         }
