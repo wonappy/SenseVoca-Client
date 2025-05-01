@@ -557,7 +557,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     // });
   }
 
-  //다음 구간 이동 콜백 버튼 => 한 번 더 복습과 헷갈리지 않게 버튼 종류와 현재 섹션인덱스 값 전달
+  //다음 구간 이동 버튼 => 한 번 더 복습과 헷갈리지 않게 버튼 종류와 현재 섹션인덱스 값 전달
   void _nextSection() {
     Navigator.pop(context, {
       'button': 'nextSection',

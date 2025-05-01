@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sense_voka/models/user_model.dart';
+import 'package:sense_voka/screens/input_myword_screen.dart';
+import 'package:sense_voka/screens/main_screen.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
 
 void main() {
@@ -10,6 +13,12 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: SignInScreen());
+    UserModel user = UserModel(
+      userId: 1,
+      email: "111",
+      name: "권원경",
+      accessToken: "1",
+    );
+    return MaterialApp(home: MainScreen(user: user));
   }
 }

@@ -14,7 +14,7 @@ class TextFieldLineWidget extends StatelessWidget {
     required this.fieldWidth,
     required this.fieldHeight,
     required this.lineThickness,
-    required this.obscureText,
+    required this.obscureText, //입력 내용 가리기 (ex.비밀번호)
     this.controller,
   });
 
@@ -36,6 +36,9 @@ class TextFieldLineWidget extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
               enabledBorder: OutlineInputBorder(borderSide: BorderSide.none),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide.none,
+              ), //focused 상태에서 밑줄 나타남 해제
             ),
             controller: controller,
           ),
