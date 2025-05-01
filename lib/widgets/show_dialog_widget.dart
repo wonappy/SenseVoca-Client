@@ -15,6 +15,9 @@ Future<void> showDialogWidget({
               onPressed: () {
                 Navigator.of(context).pop();
               },
+              style: ButtonStyle(
+                overlayColor: WidgetStateProperty.all(Color(0xFFFDF3EB)),
+              ),
               child: Text(
                 '확인',
                 style: TextStyle(

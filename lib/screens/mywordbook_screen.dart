@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sense_voka/screens/input_myword_screen.dart';
 
 import '../models/word_set_info_model.dart';
 import '../widgets/word_set_button_widget.dart';
@@ -89,8 +90,8 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
           child: FloatingActionButton(
             shape: CircleBorder(),
             backgroundColor: Color(0xFFFF983D),
+            onPressed: _reloadWordBookList,
             child: Icon(Icons.add, size: 50, color: Colors.white),
-            onPressed: () {},
           ),
         ),
       ),
@@ -162,5 +163,19 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
         ),
       ),
     );
+  }
+
+  //단어 학습 화면 생성
+  Future<void> _reloadWordBookList() async {
+    final bool popResult = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => InputMyWordScreen()),
+    );
+
+    if (popResult == true) {
+      //api 호출
+      //화면 재생성
+      //print("재호출!!!");
+    }
   }
 }
