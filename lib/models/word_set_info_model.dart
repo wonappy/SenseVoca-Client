@@ -4,6 +4,7 @@ class WordSetInfoModel {
   final int wordCount;
   final DateTime createDate;
   final DateTime lastAccess;
+  bool isLoading;
 
   WordSetInfoModel({
     required this.wordSetId,
@@ -11,6 +12,7 @@ class WordSetInfoModel {
     required this.wordCount,
     required this.createDate,
     required this.lastAccess,
+    this.isLoading = false,
   });
 
   //api용
@@ -19,5 +21,6 @@ class WordSetInfoModel {
       title = json['title'],
       wordCount = json['count'],
       createDate = json['createDate'],
-      lastAccess = json['lastAccess'];
+      lastAccess = json['lastAccess'],
+      isLoading = false;
 }

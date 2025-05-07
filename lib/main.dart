@@ -15,7 +15,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     UserModel user = UserModel(
       userId: 1,
-      email: "111",
+      email: "aaa@gmail.com",
       name: "권원경",
       accessToken: "1",
     );
