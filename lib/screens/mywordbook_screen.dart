@@ -146,14 +146,32 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
               for (int i = 0; i < wordSet.length; i++)
                 Column(
                   children: [
-                    WordSetButton(
-                      setName: wordSet[i].title,
-                      wordCount: wordSet[i].wordCount,
-                      lastAccess: DateFormat(
-                        "yyyy.MM.dd",
-                      ).format(wordSet[i].lastAccess),
-                      bWidth: 360,
-                      bHeight: 90,
+                    Stack(
+                      children: [
+                        WordSetButton(
+                          setName: wordSet[i].title,
+                          wordCount: wordSet[i].wordCount,
+                          lastAccess: DateFormat(
+                            "yyyy.MM.dd",
+                          ).format(wordSet[i].lastAccess),
+                          bWidth: 360,
+                          bHeight: 90,
+                        ),
+                        if (wordSet[i].isLoading)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.black26,
+                                borderRadius: BorderRadius.circular(15),
+                              ),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                     SizedBox(height: 10),
                   ],
@@ -167,15 +185,34 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
 
   //단어 학습 화면 생성
   Future<void> _reloadWordBookList() async {
-    final bool popResult = await Navigator.push(
+    final popResult = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => InputMyWordScreen()),
     );
 
-    if (popResult == true) {
+    if (popResult is Map) {
       //api 호출
-      //화면 재생성
-      //print("재호출!!!");
+      //호출 결과를 기다리는 동안 표시될 버튼 UI
+      final String title = popResult["title"];
+      final words = popResult["words"];
+
+      WordSetInfoModel newWordbook = WordSetInfoModel(
+        wordSetId: wordSet.length + 1,
+        // ID는 그냥 길이 + 1
+        title: title,
+        wordCount: words.length,
+        createDate: DateTime.now(),
+        lastAccess: DateTime.now(),
+        isLoading: true,
+      );
+
+      setState(() {
+        wordSet.add(newWordbook);
+      });
+
+      //api 호출 및 결과 처리
+      //success -> 로딩 컨테이너 삭제
+      //fail -> 버튼 자체 삭제
     }
   }
 }

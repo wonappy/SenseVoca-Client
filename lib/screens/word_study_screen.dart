@@ -771,20 +771,6 @@ class _WordStudyScreenState extends State<WordStudyScreen>
       duration: Duration(milliseconds: 400),
       vsync: this,
     );
-
-    // 초기화 코드는 굳이 필요 없다.
-    // //카드 이동 방향 애니메이션
-    // _slideAnimation = Tween<Offset>(
-    //   begin: Offset.zero,
-    //   end: Offset.zero,
-    // ).animate(
-    //   CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    // );
-    //
-    // //카드 이동 시 둥글게 이동하는 애니메이션
-    // _rotationAnimation = Tween<double>(begin: 0, end: 0).animate(
-    //   CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    // );
   }
 
   //화살표 버튼 -> 애니메이션 결정

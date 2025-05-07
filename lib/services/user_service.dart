@@ -8,7 +8,7 @@ import 'package:sense_voka/models/user_model.dart';
 class UserService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://10.101.68.143:8080/api/users";
+  static const String baseUrl = "http://10.101.192.29:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {

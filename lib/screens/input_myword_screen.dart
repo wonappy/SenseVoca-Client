@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sense_voka/screens/create_mywordbook_screen.dart';
-import 'package:sense_voka/widgets/show_dialog_widget.dart';
+
+import '../widgets/new_word_card_widget.dart';
+import '../widgets/show_dialog_widget.dart';
+import 'create_mywordbook_screen.dart';
 
 class InputMyWordScreen extends StatefulWidget {
   const InputMyWordScreen({super.key});
@@ -11,65 +13,112 @@ class InputMyWordScreen extends StatefulWidget {
 
 class _InputMyWordScreenState extends State<InputMyWordScreen>
     with TickerProviderStateMixin {
-  //영어 단어와 뜻 저장 List
-  final List<Map<String, String>> _cards = List.generate(
-    1,
-    (index) => {"word": "", "meaning": ""},
-  );
+  //단어 카드 리스트
+  List<Map<String, String>> wordCards = [
+    {"word": "", "meaning": ""},
+  ];
+  //단어, 뜻 입력 controller 리스트
+  final List<TextEditingController> _wordControllers = [
+    TextEditingController(),
+  ];
+  final List<TextEditingController> _meaningControllers = [
+    TextEditingController(),
+  ];
 
-  //현재 카드 index
-  int _currentIndex = 0;
+  //현재 단어 카드 인덱스
+  int currentCardIndex = 0;
 
-  //다음 페이지 이동 : index로 이동
-  void _goToPage(int index) {
-    //기존 범위를 초과했을 때, 새 카드 추가
-    if (index == _cards.length) {
+  @override
+  void initState() {
+    super.initState();
+
+    //controller에 리스너 추가
+    _wordControllers[0].addListener(() {
+      wordCards[0]["word"] = _wordControllers[0].text;
+    });
+    _meaningControllers[0].addListener(() {
+      wordCards[0]["meaning"] = _meaningControllers[0].text;
+    });
+  }
+
+  //카드 이동(왼쪽 오른쪽)
+  void moveCard({required bool isLeft}) {
+    if (isLeft) {
       setState(() {
-        _cards.add({"word": "", "meaning": ""});
+        //0번째 인덱스라면 이동 안함.
+        if (currentCardIndex <= 0) {
+          currentCardIndex = 0;
+        } else {
+          //왼쪽 이동
+          currentCardIndex--;
+        }
+      });
+    } else {
+      setState(() {
+        //가장 마지막 카드라면, 새 카드 추가
+        if (currentCardIndex >= wordCards.length - 1) {
+          addNewCard();
+          currentCardIndex++;
+        } else {
+          //오른쪽 이동
+          currentCardIndex++;
+        }
       });
     }
-    //다음 카드로 이동
-    if (index >= 0 && index < _cards.length) {
+  }
+
+  //새 단어 카드 추가
+  void addNewCard() {
+    setState(() {
+      //새 단어 정보 추가
+      wordCards.add({"word": "", "meaning": ""});
+
+      // 새 컨트롤러 추가
+      final wordController = TextEditingController();
+      final meaningController = TextEditingController();
+
+      // addListener 추가
+      wordController.addListener(() {
+        wordCards[_wordControllers.indexOf(wordController)]["word"] =
+            wordController.text;
+      });
+      meaningController.addListener(() {
+        wordCards[_meaningControllers.indexOf(meaningController)]["meaning"] =
+            meaningController.text;
+      });
+
+      _wordControllers.add(wordController);
+      _meaningControllers.add(meaningController);
+    });
+  }
+
+  //카드 삭제
+  void deleteCard(int index) {
+    if (wordCards.length <= 1) {
+      showDialogWidget(
+        context: context,
+        title: "경고",
+        msg: "최소 한 개의 단어 카드가 필요합니다.",
+      );
+    } else {
       setState(() {
-        _currentIndex = index;
+        //해당 카드 controller 메모리 삭제
+        _wordControllers[index].dispose();
+        _meaningControllers[index].dispose();
+
+        //카드 연결 정보 삭제
+        wordCards.removeAt(index);
+        _wordControllers.removeAt(index);
+        _meaningControllers.removeAt(index);
+
+        //현재 인덱스 줄이기
+        if (currentCardIndex > 0) currentCardIndex--;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    //카드 크기
-    const double cardWidth = 300;
-    const double cardHeight = 310;
-    //뒤 카드가 보이는 정도
-    const double overlap = 20;
-
-    //화면에 표시될 카드 리스트 (index, delta)
-    final List<Map<String, dynamic>> visibleCards = [];
-
-    //화면에 표시될 카드를 계산 (현재 카드, 앞 카드 2개, 뒤 카드 2개, 총 5개)
-    for (int i = 0; i < _cards.length; i++) {
-      //현재 카드로부터의 거리
-      //delta > 0 : 뒤 카드
-      //delta == 0 : 현재 카드
-      //delta < 0 : 앞 카드
-      int delta = i - _currentIndex;
-
-      //마지막 카드일 때, 뒤 카드 두개는 포함 x
-      if (_currentIndex >= _cards.length - 1 && delta > 0) continue;
-
-      //현재 카드로부터 앞, 뒤 2개의 카드 포함
-      if (delta >= -2 && delta <= 2) {
-        visibleCards.add({"index": i, "delta": delta});
-      }
-    }
-
-    //카드 출력 순서 (현재 카드가 가장 앞에 -> 가장 마지막에 그려짐)
-    final sortOrder = [-2, -1, 2, 1, 0];
-    visibleCards.sort(
-      (a, b) => sortOrder.indexOf(a["delta"]) - sortOrder.indexOf(b["delta"]),
-    );
-
     return Scaffold(
       backgroundColor: Color(0xFFFDF3EB),
       appBar: AppBar(
@@ -86,8 +135,8 @@ class _InputMyWordScreenState extends State<InputMyWordScreen>
             child: ElevatedButton(
               onPressed: () {
                 //만약 카드에 빈 값을 갖는 카드가 존재한다면,
-                if (_cards.any((card) => card["word"] == "") ||
-                    _cards.any((card) => card["meaning"] == "")) {
+                if (wordCards.any((card) => card["word"] == "") ||
+                    wordCards.any((card) => card["meaning"] == "")) {
                   showDialogWidget(
                     context: context,
                     title: "경고",
@@ -100,7 +149,8 @@ class _InputMyWordScreenState extends State<InputMyWordScreen>
                   context,
                   MaterialPageRoute(
                     builder:
-                        (context) => CreateMywordbookScreen(wordsInfo: _cards),
+                        (context) =>
+                            CreateMywordbookScreen(wordsInfo: wordCards),
                   ),
                 );
               },
@@ -136,143 +186,106 @@ class _InputMyWordScreenState extends State<InputMyWordScreen>
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
         ),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 30),
         child: Column(
           children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                //카드 출력
-                ...visibleCards.map((cardInfo) {
-                  int i = cardInfo["index"];
-                  int delta = cardInfo["delta"];
-
-                  double scale = 1.0 - (delta.abs() * 0.05);
-                  double dx = delta * overlap * 2; //겹쳐서 보여지는 크기
-                  //double baseLeft = screenWidth / 2 - cardWidth / 2 + dx;
-                  //double baseTop = screenHeight / 2 - cardHeight / 2;
-
-                  //애니메이션 출력
-                  return AnimatedAlign(
-                    duration: const Duration(milliseconds: 400),
-                    curve: Curves.easeInOut,
-                    alignment: Alignment.center,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 400),
-                      transform:
-                          Matrix4.identity()
-                            ..translate(dx)
-                            ..scale(scale),
-                      curve: Curves.easeInOut,
-                      width: cardWidth,
-                      height: cardHeight,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 10,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(24),
+            Expanded(
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  //1. 단어 카드
+                  Positioned(
+                    child: Align(
+                      alignment: Alignment.center,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          TextFormField(
-                            initialValue: _cards[i]["word"],
-                            onChanged: (text) => _cards[i]["word"] = text,
-                            decoration: InputDecoration(
-                              hintText: "단어를 입력하세요.",
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: const Color(0xFFFF983D),
-                                  width: 2,
-                                ),
+                          //현재 인덱스 위치 정보
+                          Text.rich(
+                            TextSpan(
+                              text: "${currentCardIndex + 1}",
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFFFF983D),
                               ),
+                              children: [
+                                TextSpan(
+                                  text: " / ",
+                                  style: TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFFA45200),
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: "${wordCards.length}",
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Color(0xFFFF983D),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 30),
-                          TextField(
-                            onChanged: (text) => _cards[i]["meaning"] = text,
-                            decoration: InputDecoration(
-                              hintText: "뜻을 입력하세요.",
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(
-                                  color: const Color(0xFFFF983D),
-                                  width: 2,
-                                ),
+                          SizedBox(height: 10),
+                          NewWordCardWidget(
+                            wordController: _wordControllers[currentCardIndex],
+                            meaningController:
+                                _meaningControllers[currentCardIndex],
+                          ),
+                          SizedBox(height: 10),
+                          //카드 삭제 버튼
+                          ElevatedButton(
+                            onPressed: () => deleteCard(currentCardIndex),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFFFF983D),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 30),
-                          Text(
-                            "카드 ${i + 1} / ${_cards.length}",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                            child: Text(
+                              "삭제",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 25,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  );
-                }),
+                  ),
 
-                // 왼쪽 화살표
-                Positioned(
-                  left: 10,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 40,
-                      color: Colors.black,
+                  //2. 화살표
+                  //2-1. 왼쪽 화살표
+                  Positioned(
+                    left: 5,
+                    child: IconButton(
+                      onPressed: () => moveCard(isLeft: true),
+                      icon: Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 40,
+                        color: Colors.black,
+                      ),
                     ),
-                    onPressed: () {
-                      _goToPage(_currentIndex - 1);
-                    },
                   ),
-                ),
-                // 오른쪽 화살표
-                Positioned(
-                  right: 10,
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 40,
-                      color: Colors.black,
+                  //2-2. 오른쪽 화살표
+                  Positioned(
+                    right: 5,
+                    child: IconButton(
+                      onPressed: () => moveCard(isLeft: false),
+                      icon: Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 40,
+                        color: Colors.black,
+                      ),
                     ),
-                    onPressed: () {
-                      _goToPage(_currentIndex + 1);
-                    },
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            //단어 삭제 버튼
-            ElevatedButton(
-              onPressed: () {
-                for (int i = 0; i < _cards.length; i++) {
-                  print("${_cards[i]["word"]} , ${_cards[i]["meaning"]} \n");
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFF983D),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: Text(
-                "삭제",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.w700,
-                ),
+                ],
               ),
             ),
           ],

@@ -27,6 +27,7 @@ class TextFieldLineWidget extends StatelessWidget {
           height: fieldHeight,
           child: TextField(
             obscureText: obscureText,
+            cursorColor: Color(0xFFFF983D),
             decoration: InputDecoration(
               isDense: true,
               contentPadding: EdgeInsets.symmetric(vertical: 5),

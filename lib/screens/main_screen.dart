@@ -19,7 +19,16 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: Icon(Icons.menu_rounded, size: 40),
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+              icon: Icon(Icons.menu_rounded, size: 40),
+            );
+          },
+        ),
         centerTitle: true,
         backgroundColor: Color(0xFFFF983D),
         foregroundColor: Colors.white,
@@ -31,6 +40,139 @@ class _MainScreenState extends State<MainScreen> {
         title: const Text(
           "센스보카",
           style: TextStyle(fontSize: 30, fontWeight: FontWeight.w700),
+        ),
+      ),
+      //환경설정 메뉴
+      drawer: Drawer(
+        child: Material(
+          color: Colors.white,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              Container(
+                height: 100,
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFFF983D), width: 2.0),
+                  ),
+                ),
+                child: SafeArea(
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        icon: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.black,
+                          size: 30,
+                        ),
+                      ),
+                      Text("설정", style: TextStyle(fontSize: 25)),
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.only(left: 16, bottom: 16),
+                height: 100,
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFE4CA),
+                  border: Border(
+                    bottom: BorderSide(color: Color(0xFFFF983D), width: 2.0),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          widget.user.name,
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 30,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          " 님, 환영합니다.",
+                          style: TextStyle(color: Colors.black, fontSize: 20),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      widget.user.email,
+                      style: TextStyle(color: Colors.black, fontSize: 20),
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                splashColor: Color(0xFFFF983D),
+                highlightColor: Color(0xFFFFE4CA),
+                onTap: () {
+                  // 이벤트 처리
+                },
+                child: ListTile(
+                  title: Text(
+                    "계정 관리",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("로그아웃  |  회원 탈퇴"),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                ),
+              ),
+              Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
+              InkWell(
+                splashColor: Color(0xFFFF983D),
+                highlightColor: Color(0xFFFFE4CA),
+                onTap: () {
+                  // 이벤트 처리
+                },
+                child: ListTile(
+                  title: Text(
+                    "언어",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("기본 언어 설정"),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                ),
+              ),
+              Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
+              InkWell(
+                splashColor: Color(0xFFFF983D),
+                highlightColor: Color(0xFFFFE4CA),
+                onTap: () {
+                  // 이벤트 처리
+                },
+                child: ListTile(
+                  title: Text(
+                    "음성",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("음성 속도 및 크기  |  발음 인식 수준"),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                ),
+              ),
+              Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
+              ListTile(
+                title: Text(
+                  "단어 학습",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("1일 학습 목표  |  퀴즈 복습 단어 저장"),
+                trailing: Icon(Icons.arrow_forward_ios),
+                onTap: () {
+                  // 단어 학습 설정 이동
+                },
+              ),
+              Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
+            ],
+          ),
         ),
       ),
 

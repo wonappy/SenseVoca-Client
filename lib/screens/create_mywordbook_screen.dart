@@ -5,16 +5,21 @@ import 'package:sense_voka/widgets/show_dialog_widget.dart';
 import '../models/word_set_info_model.dart';
 import '../widgets/textfield_line_widget.dart';
 
-class CreateMywordbookScreen extends StatelessWidget {
+class CreateMywordbookScreen extends StatefulWidget {
   final List<Map<String, String>> wordsInfo;
 
   const CreateMywordbookScreen({super.key, required this.wordsInfo});
 
   @override
+  State<CreateMywordbookScreen> createState() => _CreateMywordbookScreenState();
+}
+
+class _CreateMywordbookScreenState extends State<CreateMywordbookScreen> {
+  final titleController = TextEditingController(); //단어장 명
+
+  @override
   Widget build(BuildContext context) {
     final double screenWidth = MediaQuery.of(context).size.width; //화면 가로 길이
-
-    final titleController = TextEditingController(); //단어장 명
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -43,10 +48,10 @@ class CreateMywordbookScreen extends StatelessWidget {
 
                 //나만의 단어장 화면으로 돌아감
                 Navigator.pop(context); // 단어 입력 부분으로
-                Navigator.pop(
-                  context,
-                  true,
-                ); // 단어장 리스트 부분으로... -> true는 api 재호출 시점을 알려줌
+                Navigator.pop(context, {
+                  "title": title,
+                  "words": widget.wordsInfo,
+                }); // 단어장 리스트 부분으로... -> true는 api 재호출 시점을 알려줌
               },
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
@@ -103,7 +108,7 @@ class CreateMywordbookScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Text(
-                      "총 ${wordsInfo.length} 단어",
+                      "총 ${widget.wordsInfo.length} 단어",
                       style: TextStyle(color: Colors.black26),
                     ),
                   ],
@@ -135,7 +140,7 @@ class CreateMywordbookScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: 5),
-                for (Map<String, String> word in wordsInfo)
+                for (Map<String, String> word in widget.wordsInfo)
                   Column(
                     children: [
                       Row(
