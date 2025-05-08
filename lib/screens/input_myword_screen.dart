@@ -196,67 +196,66 @@ class _InputMyWordScreenState extends State<InputMyWordScreen>
                 children: [
                   //1. 단어 카드
                   Positioned(
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          //현재 인덱스 위치 정보
-                          Text.rich(
-                            TextSpan(
-                              text: "${currentCardIndex + 1}",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFFFF983D),
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: " / ",
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFFA45200),
-                                  ),
+                    left: 0,
+                    right: 0,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        //현재 인덱스 위치 정보
+                        Text.rich(
+                          TextSpan(
+                            text: "${currentCardIndex + 1}",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFFFF983D),
+                            ),
+                            children: [
+                              TextSpan(
+                                text: " / ",
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFA45200),
                                 ),
-                                TextSpan(
-                                  text: "${wordCards.length}",
-                                  style: TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w900,
-                                    color: Color(0xFFFF983D),
-                                  ),
+                              ),
+                              TextSpan(
+                                text: "${wordCards.length}",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFFFF983D),
                                 ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: 10),
-                          NewWordCardWidget(
-                            wordController: _wordControllers[currentCardIndex],
-                            meaningController:
-                                _meaningControllers[currentCardIndex],
-                          ),
-                          SizedBox(height: 10),
-                          //카드 삭제 버튼
-                          ElevatedButton(
-                            onPressed: () => deleteCard(currentCardIndex),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFFFF983D),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ),
-                            child: Text(
-                              "삭제",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        NewWordCardWidget(
+                          wordController: _wordControllers[currentCardIndex],
+                          meaningController:
+                              _meaningControllers[currentCardIndex],
+                        ),
+                        SizedBox(height: 5),
+                        //카드 삭제 버튼
+                        ElevatedButton(
+                          onPressed: () => deleteCard(currentCardIndex),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFFF983D),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                        ],
-                      ),
+                          child: Text(
+                            "삭제",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 25,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
 
