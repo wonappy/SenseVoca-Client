@@ -73,6 +73,8 @@ class _WordCardState extends State<WordCard> {
 
   @override
   Widget build(BuildContext context) {
+    String imageId = "1FFFZNQeMAqn-vZYFgyvlbKp0rife4pu0";
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Container(
@@ -144,7 +146,14 @@ class _WordCardState extends State<WordCard> {
                 Container(
                   width: 180,
                   height: 180,
-                  decoration: BoxDecoration(color: Colors.black38),
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.cover,
+                      image: NetworkImage(
+                        'https://drive.google.com/uc?export=view&id=$imageId',
+                      ),
+                    ),
+                  ),
                 ),
                 SizedBox(height: 10),
                 RichText(

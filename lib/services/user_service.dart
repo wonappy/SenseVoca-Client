@@ -8,11 +8,11 @@ import 'package:sense_voka/models/user_model.dart';
 class UserService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://10.101.192.29:8080/api/users";
+  static const String baseUrl = "http://10.101.219.229:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
-    final url = Uri.parse('$baseUrl/check-email?email=$email');
+    final url = Uri.parse('$baseUrl/$email/check-email');
     ApiResponseModel returnMsg;
 
     try {
@@ -133,7 +133,7 @@ class UserService {
         response.body,
       ); //로그인 실패 시, 응답이 없어서 error로 분류!!!!
 
-      //회원가입 성공
+      //로그인 성공
       if (response.statusCode == 200) {
         final dynamic data = result['data'];
         if (kDebugMode) {
