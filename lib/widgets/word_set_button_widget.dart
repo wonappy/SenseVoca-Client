@@ -64,18 +64,22 @@ class WordSetButton extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                setName,
-                style: TextStyle(fontSize: 33, fontWeight: FontWeight.w800),
-              ),
-              Text(
-                "$wordCount 단어 | 마지막 접근 $lastAccess",
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  setName,
+                  overflow: TextOverflow.fade,
+                  softWrap: false,
+                  style: TextStyle(fontSize: 33, fontWeight: FontWeight.w800),
+                ),
+                Text(
+                  "$wordCount 단어 | 마지막 접근 $lastAccess",
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w400),
+                ),
+              ],
+            ),
           ),
           Icon(Icons.settings, size: 50),
         ],

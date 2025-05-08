@@ -15,7 +15,7 @@ class NewWordCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 280,
-      height: 290,
+      height: 260,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(30),

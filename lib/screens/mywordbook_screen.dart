@@ -197,8 +197,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       final words = popResult["words"];
 
       WordSetInfoModel newWordbook = WordSetInfoModel(
-        wordSetId: wordSet.length + 1,
-        // ID는 그냥 길이 + 1
+        wordSetId: wordSet.last.wordSetId + 1, //아이디가 겹치지 않도록...
         title: title,
         wordCount: words.length,
         createDate: DateTime.now(),
