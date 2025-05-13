@@ -35,31 +35,43 @@ class _SignInScreenState extends State<SignInScreen> {
   //자동 로그인 -> 함수로 빼서 전체적인 흐름이 잘 보이게 변경 필요
   void _autoSingIn() async {
     //Token값들이 존재한다면,
-    if (await storage.read(key: "RefreshToken") != null &&
-        await storage.read(key: "AccessToken") != null) {
-      final accessToken = await storage.read(key: "AccessToken");
-      //accessToken 유효성 확인 api
-      //승인 -> 아래 절차 진행
-      //거부 -> RefreshToken으로 accessToken 재발급
-      //재발급도 실패하면 storage 모두 삭제!
+    final refreshToken = await storage.read(key: "RefreshToken");
+    if (refreshToken != null) {
+      //refreshToken 유효성 확인 api 호출
+      var result = await UserService.postJWTToken(refreshToken: refreshToken);
 
-      final userJson = await storage.read(key: "UserInfo");
-      if (accessToken != null && userJson != null) {
-        //저장되어있던 사용자 정보 가져오기
-        final userMap = jsonDecode(userJson);
-        final user = UserModel(
-          userId: userMap['userId'],
-          email: userMap['email'],
-          name: userMap['name'],
-          accessToken: accessToken,
-        );
+      //승인 -> accessToken 재발급 -> 자동 로그인 진행
+      //거부 -> 다시 로그인 (storage 모두 삭제!)
+      if (mounted) {
+        if (result.isSuccess) {
+          //승인
+          final accessToken = await storage.read(key: "AccessToken");
+          final userJson = await storage.read(key: "UserInfo");
 
-        //자동 로그인
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => MainScreen(user: user)),
-          );
+          if (accessToken != null && userJson != null) {
+            //저장되어있던 사용자 정보 가져오기
+            final userMap = jsonDecode(userJson);
+            final user = UserModel(
+              userId: userMap['userId'],
+              email: userMap['email'],
+              name: userMap['name'],
+              accessToken: accessToken,
+            );
+
+            //자동 로그인
+            if (mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => MainScreen(user: user)),
+              );
+            }
+          }
+        } else {
+          //거부
+          //기존 저장소 내용 모두 삭제
+          storage.deleteAll();
+          //로그인 창에서 start
+          return;
         }
       }
     }

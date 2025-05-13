@@ -8,7 +8,7 @@ import 'package:sense_voka/models/user_model.dart';
 class UserService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://10.101.219.229:8080/api/users";
+  static const String baseUrl = "http://52.78.176.186:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
@@ -180,6 +180,58 @@ class UserService {
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return (returnMsg, null);
+    }
+  }
+
+  //refreshToken 유효성 확인 -> accessToken 재발급 (자동로그인 외)
+  static Future<ApiResponseModel> postJWTToken({
+    required String refreshToken,
+  }) async {
+    final url = Uri.parse('$baseUrl/token');
+    ApiResponseModel returnMsg;
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'refreshToken': refreshToken}),
+      );
+
+      final dynamic result = jsonDecode(response.body);
+
+      //유효한 token
+      if (response.statusCode == 201) {
+        final dynamic data = result['data'];
+        if (kDebugMode) {
+          print('token 재발급 성공 - ${result['message']}');
+        }
+
+        //토큰 로컬 갱신
+        await storage.write(key: "AccessToken", value: data['accessToken']);
+
+        returnMsg = ApiResponseModel(
+          isSuccess: true,
+          title: "token 재발급 성공",
+          msg: "${result['message']}",
+        );
+        return (returnMsg);
+      } else {
+        if (kDebugMode) {
+          print('token 재발급 실패 - ${result['message']}');
+        }
+        returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "token 재발급 실패",
+          msg: "${result['message'] + "다시 로그인 해 주세요."}",
+        );
+        return (returnMsg);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('예외 발생: [postJWTToken] $e');
+      }
+      returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
+      return (returnMsg);
     }
   }
 }
