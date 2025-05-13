@@ -12,12 +12,6 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // UserModel user = UserModel(
-    //   userId: 1,
-    //   email: "aaa@gmail.com",
-    //   name: "권원경",
-    //   accessToken: "1",
-    // );
     return MaterialApp(home: SignInScreen());
   }
 }
