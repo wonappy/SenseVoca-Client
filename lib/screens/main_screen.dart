@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/user_model.dart';
 import 'package:sense_voka/screens/essential_wordbook_screen.dart';
+import 'package:sense_voka/screens/setting_account_screen.dart';
 
 import '../widgets/navigation_button_widget.dart';
 import 'mywordbook_screen.dart';
@@ -116,7 +117,12 @@ class _MainScreenState extends State<MainScreen> {
                 splashColor: Color(0xFFFF983D),
                 highlightColor: Color(0xFFFFE4CA),
                 onTap: () {
-                  // 이벤트 처리
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingAccountScreen(),
+                    ),
+                  );
                 },
                 child: ListTile(
                   title: Text(
