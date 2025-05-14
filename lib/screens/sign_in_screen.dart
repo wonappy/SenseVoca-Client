@@ -60,7 +60,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
             //자동 로그인
             if (mounted) {
-              Navigator.push(
+              //로그인 화면 대체 생성
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => MainScreen(user: user)),
               );
@@ -113,7 +114,8 @@ class _SignInScreenState extends State<SignInScreen> {
         }
 
         if (mounted) {
-          Navigator.push(
+          //로그인 화면 대체 생성
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) => MainScreen(user: user),

@@ -17,6 +17,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
   final List<String> _sortAlgorithm = ["생성 순", "최근 접근 순"];
   String? _selectedSort = "";
 
+  //단어장 api
   final List<WordSetInfoModel> wordSet = [
     WordSetInfoModel(
       wordSetId: 1,
