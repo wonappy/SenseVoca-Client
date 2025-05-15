@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sense_voka/models/user_model.dart';
-import 'package:sense_voka/screens/main_screen.dart';
-import 'package:sense_voka/screens/setting_account_screen.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
+import 'package:sense_voka/screens/word_study_screen.dart';
 
 void main() {
   runApp(App());
