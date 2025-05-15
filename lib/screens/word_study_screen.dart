@@ -539,22 +539,6 @@ class _WordStudyScreenState extends State<WordStudyScreen>
       'currentIndex': widget.sectionIndex,
       'wordList': retryWordList,
     });
-
-    //addPostFrameCallback : pop 작업이 끝난 이후, 안전하게 다음 화면 생성
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder:
-    //           (context) => WordStudyScreen(
-    //             wordList: retryWordList,
-    //             sectionIndex: widget.sectionIndex,
-    //             wordCount: retryWordList.length,
-    //           ),
-    //       fullscreenDialog: true,
-    //     ),
-    //   );
-    // });
   }
 
   //다음 구간 이동 버튼 => 한 번 더 복습과 헷갈리지 않게 버튼 종류와 현재 섹션인덱스 값 전달
