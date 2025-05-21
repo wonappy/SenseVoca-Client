@@ -4,6 +4,8 @@ class NavigationButtonWidget extends StatelessWidget {
   final String text;
   final double bWidth;
   final double bHeight;
+  final double? fontSize;
+  final bool? popBeforePush;
 
   //버튼을 눌렀을 때 이동할 공간
   final Widget destinationScreen;
@@ -13,13 +15,19 @@ class NavigationButtonWidget extends StatelessWidget {
     required this.text,
     required this.bWidth,
     required this.bHeight,
+    this.fontSize,
+    this.popBeforePush,
     required this.destinationScreen,
   });
 
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async {
+        if (popBeforePush == true) {
+          Navigator.pop(context);
+        }
+
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -60,7 +68,10 @@ class NavigationButtonWidget extends StatelessWidget {
       ),
       child: Text(
         text,
-        style: TextStyle(fontSize: 33, fontWeight: FontWeight.w800),
+        style: TextStyle(
+          fontSize: (fontSize != null) ? fontSize : 33,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
