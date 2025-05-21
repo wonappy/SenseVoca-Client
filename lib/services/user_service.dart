@@ -8,7 +8,7 @@ import 'package:sense_voka/models/user_model.dart';
 class UserService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://52.78.176.186:8080/api/users";
+  static const String baseUrl = "http://15.164.164.114:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
@@ -119,9 +119,6 @@ class UserService {
     final url = Uri.parse('$baseUrl/login');
     ApiResponseModel returnMsg;
 
-    //기존 저장소 내용 모두 삭제 -> 환경설정 내용은 그럼 어떻게 가져올 수 있징...
-    storage.deleteAll();
-
     try {
       final response = await http.post(
         url,
@@ -150,6 +147,10 @@ class UserService {
         //토큰 로컬 저장
         await storage.write(key: "AccessToken", value: data['accessToken']);
         await storage.write(key: "RefreshToken", value: data['refreshToken']);
+
+        final all = await storage.readAll();
+        print("📦 SecureStorage 전체 내용: $all");
+
         final userJson = jsonEncode({
           'userId': user.userId,
           'email': user.email,
@@ -201,28 +202,28 @@ class UserService {
 
       //유효한 token
       if (response.statusCode == 201) {
-        final dynamic data = result['data'];
+        final dynamic data = result['accessToken'];
         if (kDebugMode) {
-          print('token 재발급 성공 - ${result['message']}');
+          print('token 재발급 성공');
         }
 
-        //토큰 로컬 갱신
+        //저장소 토큰 로컬 갱신
         await storage.write(key: "AccessToken", value: data['accessToken']);
 
         returnMsg = ApiResponseModel(
           isSuccess: true,
           title: "token 재발급 성공",
-          msg: "${result['message']}",
+          msg: "accessToken : ${data['accessToken']}",
         );
         return (returnMsg);
       } else {
         if (kDebugMode) {
-          print('token 재발급 실패 - ${result['message']}');
+          print('token 재발급 실패');
         }
         returnMsg = ApiResponseModel(
           isSuccess: false,
           title: "token 재발급 실패",
-          msg: "${result['message'] + "다시 로그인 해 주세요."}",
+          msg: "재로그인 필요",
         );
         return (returnMsg);
       }

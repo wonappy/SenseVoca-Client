@@ -4,6 +4,7 @@ class CallbackButtonWidget extends StatefulWidget {
   final String text;
   final double bWidth;
   final double bHeight;
+  final double? fontSize;
   final bool? isPressed;
   final VoidCallback? onPressed;
 
@@ -12,6 +13,7 @@ class CallbackButtonWidget extends StatefulWidget {
     required this.text,
     required this.bWidth,
     required this.bHeight,
+    this.fontSize,
     this.isPressed,
     this.onPressed,
   });
@@ -76,7 +78,10 @@ class _CallbackButtonWidgetState extends State<CallbackButtonWidget> {
       ),
       child: Text(
         widget.text,
-        style: TextStyle(fontSize: 33, fontWeight: FontWeight.w800),
+        style: TextStyle(
+          fontSize: (widget.fontSize != null) ? widget.fontSize : 33,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }

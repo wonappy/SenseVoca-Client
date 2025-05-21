@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:sense_voka/screens/input_myword_screen.dart';
+import 'package:sense_voka/screens/random_wordbook_screen.dart';
+import 'package:sense_voka/widgets/navigation_button_widget.dart';
+import 'package:sense_voka/widgets/speech_bubble_widget.dart';
+import 'package:speech_bubble/speech_bubble.dart';
 
 import '../models/word_set_info_model.dart';
 import '../widgets/word_set_button_widget.dart';
@@ -13,6 +18,8 @@ class MyWordBookScreen extends StatefulWidget {
 }
 
 class _MyWordBookScreenState extends State<MyWordBookScreen> {
+  static final storage = FlutterSecureStorage();
+
   //단어장 정렬 방법
   final List<String> _sortAlgorithm = ["생성 순", "최근 접근 순"];
   String? _selectedSort = "";
@@ -186,7 +193,68 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
 
   //단어 학습 화면 생성
   Future<void> _reloadWordBookList() async {
-    final popResult = await Navigator.push(
+    //말풍선 모달 창
+    showDialog(
+      context: context,
+      barrierColor: Colors.black26,
+      builder:
+          (context) => Center(
+            child: Container(
+              margin: EdgeInsets.only(top: 10),
+              width: MediaQuery.of(context).size.width * 0.73,
+              height: MediaQuery.of(context).size.height * 0.15,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 5,
+                    offset: Offset(0, 8),
+                    color: Colors.black.withValues(alpha: 0.3),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "어떤 방식으로 만들까요?",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 20,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      NavigationButtonWidget(
+                        text: "직접 입력",
+                        bWidth: MediaQuery.of(context).size.width * 0.09,
+                        bHeight: MediaQuery.of(context).size.height * 0.05,
+                        fontSize: 20,
+                        destinationScreen: InputMyWordScreen(),
+                        popBeforePush: true,
+                      ),
+                      SizedBox(width: MediaQuery.of(context).size.width * 0.02),
+                      NavigationButtonWidget(
+                        text: "랜덤 생성",
+                        bWidth: MediaQuery.of(context).size.width * 0.09,
+                        bHeight: MediaQuery.of(context).size.height * 0.05,
+                        fontSize: 20,
+                        destinationScreen: RandomWordBookScreen(),
+                        popBeforePush: true,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+    );
+
+    /*final popResult = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => InputMyWordScreen()),
     );
@@ -213,6 +281,6 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       //api 호출 및 결과 처리
       //success -> 로딩 컨테이너 삭제
       //fail -> 버튼 자체 삭제
-    }
+    }*/
   }
 }

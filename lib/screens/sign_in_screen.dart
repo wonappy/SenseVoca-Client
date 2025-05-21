@@ -34,8 +34,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
   //자동 로그인 -> 함수로 빼서 전체적인 흐름이 잘 보이게 변경 필요
   void _autoSingIn() async {
+    final all = await storage.readAll();
+    print("📦 SecureStorage 전체 내용: $all");
+
     //Token값들이 존재한다면,
     final refreshToken = await storage.read(key: "RefreshToken");
+
     if (refreshToken != null) {
       //refreshToken 유효성 확인 api 호출
       var result = await UserService.postJWTToken(refreshToken: refreshToken);
