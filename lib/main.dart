@@ -12,16 +12,16 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: MainScreen(
-        user: UserModel(
-          userId: 1,
-          email: "ricegirl@gmail.com",
-          name: "밥순이",
-          accessToken: "12312412",
-        ),
-      ),
-    );
-    //return MaterialApp(home: SignInScreen());
+    // return MaterialApp(
+    //   home: MainScreen(
+    //     user: UserModel(
+    //       userId: 1,
+    //       email: "ricegirl@gmail.com",
+    //       name: "밥순이",
+    //       accessToken: "12312412",
+    //     ),
+    //   ),
+    // );
+    return MaterialApp(home: SignInScreen());
   }
 }

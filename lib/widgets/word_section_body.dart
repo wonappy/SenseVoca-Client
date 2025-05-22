@@ -43,7 +43,10 @@ class WordSectionBody extends StatelessWidget {
                             ),
                           ),
                         ),
-                        Expanded(flex: 4, child: Text(entry.meaning)),
+                        Expanded(
+                          flex: 4,
+                          child: Text(entry.meaning.replaceAll('; ', '\n')),
+                        ),
                       ],
                     ),
                     Divider(color: Colors.black12, thickness: 1.0, height: 8.0),

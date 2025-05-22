@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/api_response.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
-import 'package:sense_voka/services/user_service.dart';
+import 'package:sense_voka/services/users_service.dart';
 
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
@@ -37,7 +37,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String email = _emailController.text;
 
     //api 호출
-    final ApiResponseModel result = await UserService.getCheckEmailDuplicate(
+    final ApiResponseModel result = await UsersService.getCheckEmailDuplicate(
       email,
     );
 
@@ -87,7 +87,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     //회원가입 api 호출
-    final ApiResponseModel result = await UserService.postSignUp(
+    final ApiResponseModel result = await UsersService.postSignUp(
       email,
       pw,
       name,

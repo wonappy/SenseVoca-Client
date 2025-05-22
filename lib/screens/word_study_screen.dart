@@ -1,9 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/widgets/end_card_widget.dart';
 import '../models/word_info_model.dart';
+import '../services/mywordbooks_service.dart';
+import '../styles/error_snack_bar_style.dart';
 import '../styles/white_to_orange_button_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_card_widget.dart';
+
+//단어 발음 국가 설정 (임시 데이터) -> 다른 곳으로 옮길 것
+enum Country { us, uk, aus }
 
 class WordStudyScreen extends StatefulWidget {
   final List<int> wordList;
@@ -21,6 +27,9 @@ class WordStudyScreen extends StatefulWidget {
 
 class _WordStudyScreenState extends State<WordStudyScreen>
     with TickerProviderStateMixin {
+  //발음 국가 설정
+  String accent = Country.us.name;
+
   int wordCount = -1; //구간 내 단어 개수
 
   int currentIndex = 0; //현재 카드 인덱스
@@ -35,6 +44,9 @@ class _WordStudyScreenState extends State<WordStudyScreen>
   bool isSectionCompleteAnimating = false;
   //구간 학습 완료 UI 다음 카드 용 -> true : 다음 카드가 EndCard false : 다음 카드가 WordCard
   bool isSectionCompleteShowNext = false;
+
+  //api 호출 상태 -> t: 로딩 중, f: 호출 완료
+  bool isLoading = true;
 
   //임시 데이터 [DB 역할]
   final List<WordInfoModel> dbWord = [
@@ -491,7 +503,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
   ];
 
   //임시 데이터 [api 반환값 역할]
-  List<WordInfoModel> wordInfoList = [];
+  late List<WordInfoModel> wordInfoList = [];
 
   //애니메이션 변수
   late AnimationController _animationController;
@@ -503,8 +515,9 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     super.initState();
 
     // 선택된 단어의 인덱스로 검색해서 구간 내 단어 정보 리스트 생성
-    wordInfoList =
-        dbWord.where((word) => widget.wordList.contains(word.wordId)).toList();
+    _getWordInfoList(wordList: widget.wordList, country: accent);
+    // wordInfoList =
+    //     dbWord.where((word) => widget.wordList.contains(word.wordId)).toList();
     //구간 내 단어 개수
     wordCount = widget.wordList.length;
 
@@ -618,134 +631,159 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                 ),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.only(left: 5, right: 5, top: 10, bottom: 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  //현재 카드 (애니메이션 x)
-                  if (!isAnimating)
-                    isSectionCompleteShowNext
-                        ? EndCardWidget(
-                          section: widget.sectionIndex + 1,
-                          wordCount: wordCount,
-                          completedWords: wordCount - retryWordList.length,
-                          retryWords: retryWordList,
-                          onRetryButtonPressed: () => _retrySection(),
-                          onNextSectionPressed: () => _nextSection(),
-                        )
-                        : WordCard(
-                          word: wordInfoList[currentIndex],
-                          accent: "us",
-                          isRetryButtonPressed: retryWordList.contains(
-                            wordInfoList[currentIndex].wordId,
-                          ),
-                          onRetryButtonPressed:
-                              () => _toggleRetryWord(
-                                wordInfoList[currentIndex].wordId,
-                              ),
-                        ),
-                  //다음 카드 출력(애니메이션 중일 때)
-                  if (showNext)
-                    isSectionCompleteShowNext
-                        ? EndCardWidget(
-                          //다음 카드가 구간 완료 카드일 때,
-                          section: widget.sectionIndex + 1,
-                          wordCount: wordCount,
-                          completedWords: wordCount - retryWordList.length,
-                          retryWords: retryWordList,
-                          onRetryButtonPressed: null,
-                          onNextSectionPressed: null,
-                        )
-                        : isSectionCompleteAnimating
-                        ? WordCard(
-                          //다음 카드가 구간완료 -> 마지막인덱스카드일 때,
-                          word: wordInfoList[currentIndex],
-                          accent: "us",
-                          isRetryButtonPressed: retryWordList.contains(
-                            wordInfoList[currentIndex].wordId,
-                          ),
-                          onRetryButtonPressed:
-                              () => _toggleRetryWord(currentIndex),
-                        )
-                        : WordCard(
-                          //일반 다음 카드
-                          word: wordInfoList[nextIndex],
-                          accent: "us",
-                          isRetryButtonPressed: retryWordList.contains(
-                            wordInfoList[nextIndex].wordId,
-                          ),
-                          onRetryButtonPressed:
-                              () => _toggleRetryWord(nextIndex),
-                        ),
-                  //현재 카드 (애니메이션 중일 때)
-                  if (isAnimating)
-                    AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset:
-                              _slideAnimation.value * screenWidth, //위치 이동 애니메이션
-                          child: Transform.rotate(
-                            angle: _rotationAnimation.value, //카드 회전 애니메이션
-                            child:
-                                isSectionCompleteAnimating && isLeft
-                                    ? EndCardWidget(
-                                      section: widget.sectionIndex + 1,
-                                      wordCount: wordCount,
-                                      completedWords:
-                                          wordCount - retryWordList.length,
-                                      retryWords: retryWordList,
-                                      onRetryButtonPressed: null,
-                                      onNextSectionPressed: null,
-                                    )
-                                    : WordCard(
-                                      word: wordInfoList[currentIndex],
-                                      accent: "us",
-                                      isRetryButtonPressed: retryWordList
-                                          .contains(
-                                            wordInfoList[currentIndex].wordId,
-                                          ),
-                                      onRetryButtonPressed:
-                                          () => _toggleRetryWord(currentIndex),
-                                    ),
-                          ),
-                        );
-                      },
-                    ),
+      body:
+          isLoading
+              ? Center(
+                child: CircularProgressIndicator(color: Color(0xFFFF983D)),
+              )
+              : Padding(
+                padding: const EdgeInsets.only(
+                  left: 5,
+                  right: 5,
+                  top: 10,
+                  bottom: 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          //현재 카드 (애니메이션 x)
+                          if (!isAnimating)
+                            isSectionCompleteShowNext
+                                ? EndCardWidget(
+                                  section: widget.sectionIndex + 1,
+                                  wordCount: wordCount,
+                                  completedWords:
+                                      wordCount - retryWordList.length,
+                                  retryWords: retryWordList,
+                                  onRetryButtonPressed: () => _retrySection(),
+                                  onNextSectionPressed: () => _nextSection(),
+                                )
+                                : WordCard(
+                                  word: wordInfoList[currentIndex],
+                                  accent: accent,
+                                  isRetryButtonPressed: retryWordList.contains(
+                                    wordInfoList[currentIndex].wordId,
+                                  ),
+                                  onRetryButtonPressed:
+                                      () => _toggleRetryWord(
+                                        wordInfoList[currentIndex].wordId,
+                                      ),
+                                ),
+                          //다음 카드 출력(애니메이션 중일 때)
+                          if (showNext)
+                            isSectionCompleteShowNext
+                                ? EndCardWidget(
+                                  //다음 카드가 구간 완료 카드일 때,
+                                  section: widget.sectionIndex + 1,
+                                  wordCount: wordCount,
+                                  completedWords:
+                                      wordCount - retryWordList.length,
+                                  retryWords: retryWordList,
+                                  onRetryButtonPressed: null,
+                                  onNextSectionPressed: null,
+                                )
+                                : isSectionCompleteAnimating
+                                ? WordCard(
+                                  //다음 카드가 구간완료 -> 마지막인덱스카드일 때,
+                                  word: wordInfoList[currentIndex],
+                                  accent: accent,
+                                  isRetryButtonPressed: retryWordList.contains(
+                                    wordInfoList[currentIndex].wordId,
+                                  ),
+                                  onRetryButtonPressed:
+                                      () => _toggleRetryWord(currentIndex),
+                                )
+                                : WordCard(
+                                  //일반 다음 카드
+                                  word: wordInfoList[nextIndex],
+                                  accent: accent,
+                                  isRetryButtonPressed: retryWordList.contains(
+                                    wordInfoList[nextIndex].wordId,
+                                  ),
+                                  onRetryButtonPressed:
+                                      () => _toggleRetryWord(nextIndex),
+                                ),
+                          //현재 카드 (애니메이션 중일 때)
+                          if (isAnimating)
+                            AnimatedBuilder(
+                              animation: _animationController,
+                              builder: (context, child) {
+                                return Transform.translate(
+                                  offset:
+                                      _slideAnimation.value *
+                                      screenWidth, //위치 이동 애니메이션
+                                  child: Transform.rotate(
+                                    angle:
+                                        _rotationAnimation.value, //카드 회전 애니메이션
+                                    child:
+                                        isSectionCompleteAnimating && isLeft
+                                            ? EndCardWidget(
+                                              section: widget.sectionIndex + 1,
+                                              wordCount: wordCount,
+                                              completedWords:
+                                                  wordCount -
+                                                  retryWordList.length,
+                                              retryWords: retryWordList,
+                                              onRetryButtonPressed: null,
+                                              onNextSectionPressed: null,
+                                            )
+                                            : WordCard(
+                                              word: wordInfoList[currentIndex],
+                                              accent: "us",
+                                              isRetryButtonPressed:
+                                                  retryWordList.contains(
+                                                    wordInfoList[currentIndex]
+                                                        .wordId,
+                                                  ),
+                                              onRetryButtonPressed:
+                                                  () => _toggleRetryWord(
+                                                    currentIndex,
+                                                  ),
+                                            ),
+                                  ),
+                                );
+                              },
+                            ),
 
-                  // 왼쪽 화살표
-                  if (isSectionCompleteShowNext || currentIndex > 0)
-                    Positioned(
-                      left: 0,
-                      child: ElevatedButton(
-                        onPressed: () => _changeCard(true),
-                        style: whiteOrangeButtonStyle(),
-                        child: Icon(Icons.arrow_back_ios_new_rounded, size: 30),
+                          // 왼쪽 화살표
+                          if (isSectionCompleteShowNext || currentIndex > 0)
+                            Positioned(
+                              left: 0,
+                              child: ElevatedButton(
+                                onPressed: () => _changeCard(true),
+                                style: whiteOrangeButtonStyle(),
+                                child: Icon(
+                                  Icons.arrow_back_ios_new_rounded,
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                          // 오른쪽 화살표
+                          if (!isSectionCompleteShowNext &&
+                              currentIndex < wordCount)
+                            Positioned(
+                              right: 0,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  _changeCard(false);
+                                },
+                                style: whiteOrangeButtonStyle(),
+                                child: Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 30,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
-                  // 오른쪽 화살표
-                  if (!isSectionCompleteShowNext && currentIndex < wordCount)
-                    Positioned(
-                      right: 0,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          _changeCard(false);
-                        },
-                        style: whiteOrangeButtonStyle(),
-                        child: Icon(Icons.arrow_forward_ios_rounded, size: 30),
-                      ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -835,5 +873,76 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     ).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+  }
+
+  ////////////api/////////////
+
+  //단어 상세 정보 반환 api
+  void _getWordInfoList({
+    required List<int> wordList,
+    required String country,
+  }) async {
+    //로딩 창 출력
+    setState(() {
+      isLoading = true;
+    });
+
+    //api 호출
+    var result = await MywordbooksService.getMyWordsInfo(
+      wordIdList: wordList,
+      country: country,
+    );
+
+    if (mounted) {
+      if (result.isSuccess) {
+        try {
+          //미리 이미지 가져오기
+          await _precacheImages(result.data);
+        } catch (e) {
+          if (kDebugMode) {
+            print("일부 이미지 로딩에 실패하였습니다. - $e");
+          }
+        }
+        //데이터 갱신 & 로딩 종료
+        setState(() {
+          wordInfoList = result.data;
+          isLoading = false;
+        });
+      } else {
+        if (result.title == "오류 발생") {
+          //오류 발생
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else if (result.title == "Token 재발급") {
+          //토큰 재발급 및 재실행 과정
+        } else {
+          //일반 실패 응답
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
+  }
+
+  //이미지 미리 가져오기
+  Future<void> _precacheImages(List<WordInfoModel> wordList) async {
+    for (var word in wordList) {
+      try {
+        final image = NetworkImage(
+          "https://drive.google.com/uc?export=view&id=${word.mnemonicImageUrl}",
+        );
+        await precacheImage(image, context);
+      } catch (e) {
+        if (kDebugMode) {
+          print(
+            '이미지 캐싱 실패: ${word.wordId} - ${word.word} _ ${word.mnemonicImageUrl}',
+          );
+        }
+      }
+    }
   }
 }
