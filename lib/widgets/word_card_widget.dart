@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_info_model.dart';
 import 'package:sense_voka/styles/example_sentence_style.dart';
@@ -104,7 +105,7 @@ class _WordCardState extends State<WordCard> {
                   onPressed: () => printAvailableVoices(),
                   icon: Icon(
                     Icons.star_border_rounded,
-                    size: 45,
+                    size: 40,
                     color: Colors.black,
                   ),
                 ),
@@ -113,14 +114,14 @@ class _WordCardState extends State<WordCard> {
                     Text(
                       widget.word.word,
                       style: TextStyle(
-                        fontSize: 30,
+                        fontSize: 25,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
                       widget.word.pronunciation,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 15,
                         fontWeight: FontWeight.w400,
                       ),
                     ),
@@ -131,32 +132,46 @@ class _WordCardState extends State<WordCard> {
                   onPressed: () => _speak(widget.word.word),
                   icon: Icon(
                     Icons.volume_up_rounded,
-                    size: 40,
+                    size: 38,
                     color: Colors.black,
                   ),
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 4),
             //뜻
-            Text(widget.word.meaning, style: TextStyle(fontSize: 18)),
-            SizedBox(height: 10),
+            Text(widget.word.meaning, style: TextStyle(fontSize: 15)),
+            SizedBox(height: 8),
             //연상 예문 이미지 + 연상 예문
             Column(
               children: [
-                Container(
+                //캐싱 이미지 디스크에 저장 -> 조금 더 오래 가지고 있을 수 있음.
+                CachedNetworkImage(
+                  imageUrl:
+                      "https://drive.google.com/uc?export=view&id=${widget.word.mnemonicImageUrl}",
                   width: 180,
                   height: 180,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(
-                        'https://drive.google.com/uc?export=view&id=${widget.word.mnemonicImageUrl}',
-                      ),
-                    ),
-                  ),
+                  fit: BoxFit.cover,
+                  // placeholder:
+                  //     (context, url) =>
+                  //         CircularProgressIndicator(color: Color(0xFFFF983D)),
+                  errorWidget:
+                      (context, url, error) => Icon(Icons.image_not_supported),
                 ),
-                SizedBox(height: 10),
+                //온리 캐싱 데이터 -> 앱 종료 후 삭제 -> 다시 켰을 때는 또 다시 다운로드 받아와야 함.
+                // Container(
+                //   width: 180,
+                //   height: 180,
+                //   decoration: BoxDecoration(
+                //     image: DecorationImage(
+                //       fit: BoxFit.cover,
+                //       image: NetworkImage(
+                //         'https://drive.google.com/uc?export=view&id=${widget.word.mnemonicImageUrl}',
+                //       ),
+                //     ),
+                //   ),
+                // ),
+                SizedBox(height: 5),
                 RichText(
                   text: TextSpan(
                     children: exampleSentenceStyle(
@@ -176,11 +191,11 @@ class _WordCardState extends State<WordCard> {
                   "이 예문이 마음에 들지 않으신가요?",
                   style: TextStyle(color: Colors.black26, fontSize: 12),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 5),
                 Divider(color: Colors.black12, thickness: 1.0, height: 8.0),
               ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 5),
             //영어 예문
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,11 +205,15 @@ class _WordCardState extends State<WordCard> {
                   children: [
                     Icon(Icons.arrow_forward_ios_rounded, color: Colors.black),
                     SizedBox(width: 7),
-                    RichText(
-                      text: TextSpan(
-                        children: exampleSentenceStyle(
-                          widget.word.exampleSentenceEn,
-                          false,
+                    Expanded(
+                      child: RichText(
+                        softWrap: true,
+                        overflow: TextOverflow.visible,
+                        text: TextSpan(
+                          children: exampleSentenceStyle(
+                            widget.word.exampleSentenceEn,
+                            false,
+                          ),
                         ),
                       ),
                     ),
@@ -202,7 +221,7 @@ class _WordCardState extends State<WordCard> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             //버튼
             Column(
               children: [

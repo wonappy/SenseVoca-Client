@@ -15,7 +15,7 @@ List<TextSpan> exampleSentenceStyle(String text, bool isMnemonic) {
       spans.add(
         TextSpan(
           text: text.substring(start, match.start),
-          style: TextStyle(fontSize: 17, color: Colors.black),
+          style: TextStyle(fontSize: 16, color: Colors.black),
         ),
       );
     }
@@ -27,11 +27,11 @@ List<TextSpan> exampleSentenceStyle(String text, bool isMnemonic) {
     TextStyle style =
         matchedText.startsWith('[')
             ? TextStyle(
-              fontSize: isMnemonic ? 20 : 18,
+              fontSize: isMnemonic ? 18 : 16,
               color: Color(0xFFFF983D),
               fontWeight: isMnemonic ? FontWeight.w800 : FontWeight.normal,
             ) // 발음
-            : TextStyle(fontSize: 17, color: Colors.blueAccent); // 의미
+            : TextStyle(fontSize: 16, color: Colors.blueAccent); // 의미
 
     spans.add(TextSpan(text: content, style: style));
 
