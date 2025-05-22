@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sense_voka/screens/main_screen.dart';
 import 'package:sense_voka/screens/sign_up_screen.dart';
-import 'package:sense_voka/services/user_service.dart';
+import 'package:sense_voka/services/users_service.dart';
 
 import '../models/user_model.dart';
 import '../styles/error_snack_bar_style.dart';
@@ -34,15 +34,12 @@ class _SignInScreenState extends State<SignInScreen> {
 
   //자동 로그인 -> 함수로 빼서 전체적인 흐름이 잘 보이게 변경 필요
   void _autoSingIn() async {
-    final all = await storage.readAll();
-    print("📦 SecureStorage 전체 내용: $all");
-
     //Token값들이 존재한다면,
     final refreshToken = await storage.read(key: "RefreshToken");
 
     if (refreshToken != null) {
       //refreshToken 유효성 확인 api 호출
-      var result = await UserService.postJWTToken(refreshToken: refreshToken);
+      var result = await UsersService.postJWTToken(refreshToken: refreshToken);
 
       //승인 -> accessToken 재발급 -> 자동 로그인 진행
       //거부 -> 다시 로그인 (storage 모두 삭제!)
@@ -104,7 +101,7 @@ class _SignInScreenState extends State<SignInScreen> {
     }
 
     //api 호출
-    var (result, user) = await UserService.postSignIn(email: email, pw: pw);
+    var (result, user) = await UsersService.postSignIn(email: email, pw: pw);
 
     if (mounted) {
       //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.

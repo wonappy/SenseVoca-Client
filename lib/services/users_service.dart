@@ -5,10 +5,10 @@ import 'package:http/http.dart' as http;
 import 'package:sense_voka/models/api_response.dart';
 import 'package:sense_voka/models/user_model.dart';
 
-class UserService {
+class UsersService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://15.164.164.114:8080/api/users";
+  static const String baseUrl = "http://10.101.18.156:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
@@ -149,7 +149,6 @@ class UserService {
         await storage.write(key: "RefreshToken", value: data['refreshToken']);
 
         final all = await storage.readAll();
-        print("📦 SecureStorage 전체 내용: $all");
 
         final userJson = jsonEncode({
           'userId': user.userId,
@@ -208,12 +207,14 @@ class UserService {
         }
 
         //저장소 토큰 로컬 갱신
-        await storage.write(key: "AccessToken", value: data['accessToken']);
+        await storage.write(key: "AccessToken", value: data);
+        print("토큰 값 : $data");
 
         returnMsg = ApiResponseModel(
           isSuccess: true,
           title: "token 재발급 성공",
-          msg: "accessToken : ${data['accessToken']}",
+          msg: "accessToken : data",
+          data: data,
         );
         return (returnMsg);
       } else {

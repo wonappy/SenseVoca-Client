@@ -1,13 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:sense_voka/screens/input_myword_screen.dart';
 import 'package:sense_voka/screens/random_wordbook_screen.dart';
+import 'package:sense_voka/services/mywordbooks_service.dart';
 import 'package:sense_voka/widgets/navigation_button_widget.dart';
-import 'package:sense_voka/widgets/speech_bubble_widget.dart';
-import 'package:speech_bubble/speech_bubble.dart';
 
 import '../models/word_set_info_model.dart';
+import '../styles/error_snack_bar_style.dart';
+import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_set_button_widget.dart';
 
 class MyWordBookScreen extends StatefulWidget {
@@ -25,42 +27,19 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
   String? _selectedSort = "";
 
   //단어장 api
-  final List<WordSetInfoModel> wordSet = [
-    WordSetInfoModel(
-      wordSetId: 1,
-      title: "나만의 단어장 1",
-      wordCount: 45,
-      createDate: DateTime(2025, 3, 4, 11, 20),
-      lastAccess: DateTime(2025, 3, 4, 11, 23),
-    ),
-    WordSetInfoModel(
-      wordSetId: 2,
-      title: "나만의 단어장 2",
-      wordCount: 37,
-      createDate: DateTime(2025, 3, 4, 11, 21),
-      lastAccess: DateTime(2025, 3, 5, 21, 6),
-    ),
-    WordSetInfoModel(
-      wordSetId: 3,
-      title: "나만의 단어장 3",
-      wordCount: 21,
-      createDate: DateTime(2025, 3, 5, 14, 21),
-      lastAccess: DateTime(2025, 3, 7, 21, 33),
-    ),
-    WordSetInfoModel(
-      wordSetId: 4,
-      title: "나만의 단어장 4",
-      wordCount: 78,
-      createDate: DateTime(2025, 3, 5, 15, 11),
-      lastAccess: DateTime(2025, 3, 5, 2, 6),
-    ),
-  ];
+  late List<WordBookInfoModel> wordSet;
+
+  //api 호출 상태 -> t: 로딩 중, f: 호출 완료
+  bool isLoading = true;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     setState(() {
+      //나만의 단어장 리스트 가져오기
+      _getWordSet();
+      //정렬 알고리즘 초기화
       _selectedSort = _sortAlgorithm[0];
     });
   }
@@ -104,90 +83,103 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
         ),
       ),
 
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //상단 기본 정보 제공
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("총 ${wordSet.length}개", style: TextStyle(fontSize: 19)),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    height: 35,
-                    decoration: BoxDecoration(color: Color(0xFFE8E8E8)),
-                    child: DropdownButton(
-                      dropdownColor: Color(0xFFE8E8E8),
-                      underline: SizedBox.shrink(),
-                      value: _selectedSort,
-                      items:
-                          _sortAlgorithm
-                              .map(
-                                (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
-                              )
-                              .toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedSort = value!;
-                          if (_selectedSort == "최근 접근 순") {
-                            wordSet.sort(
-                              (a, b) => b.lastAccess.compareTo(a.lastAccess),
-                            );
-                          } else if (_selectedSort == "생성 순") {
-                            wordSet.sort(
-                              (a, b) => a.createDate.compareTo(b.createDate),
-                            );
-                          }
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 20),
-              //단어장 목록
-              for (int i = 0; i < wordSet.length; i++)
-                Column(
-                  children: [
-                    Stack(
-                      children: [
-                        WordSetButton(
-                          setName: wordSet[i].title,
-                          wordCount: wordSet[i].wordCount,
-                          lastAccess: DateFormat(
-                            "yyyy.MM.dd",
-                          ).format(wordSet[i].lastAccess),
-                          bWidth: 360,
-                          bHeight: 90,
-                        ),
-                        if (wordSet[i].isLoading)
-                          Positioned.fill(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.black26,
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                ),
-                              ),
+      body:
+          isLoading
+              ? Center(
+                child: CircularProgressIndicator(color: Color(0xFFFF983D)),
+              )
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      //상단 기본 정보 제공
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "총 ${wordSet.length}개",
+                            style: TextStyle(fontSize: 19),
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            height: 35,
+                            decoration: BoxDecoration(color: Color(0xFFE8E8E8)),
+                            child: DropdownButton(
+                              dropdownColor: Color(0xFFE8E8E8),
+                              underline: SizedBox.shrink(),
+                              value: _selectedSort,
+                              items:
+                                  _sortAlgorithm
+                                      .map(
+                                        (e) => DropdownMenuItem(
+                                          value: e,
+                                          child: Text(e),
+                                        ),
+                                      )
+                                      .toList(),
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedSort = value!;
+                                  if (_selectedSort == "최근 접근 순") {
+                                    wordSet.sort(
+                                      (a, b) =>
+                                          b.lastAccess.compareTo(a.lastAccess),
+                                    );
+                                  } else if (_selectedSort == "생성 순") {
+                                    wordSet.sort(
+                                      (a, b) =>
+                                          a.createDate.compareTo(b.createDate),
+                                    );
+                                  }
+                                });
+                              },
                             ),
                           ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                  ],
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                      //단어장 목록
+                      for (int i = 0; i < wordSet.length; i++)
+                        Column(
+                          children: [
+                            Stack(
+                              children: [
+                                WordSetButton(
+                                  wordbookId: wordSet[i].wordBookId,
+                                  setName: wordSet[i].title,
+                                  wordCount: wordSet[i].wordCount,
+                                  lastAccess: DateFormat(
+                                    "yyyy.MM.dd",
+                                  ).format(wordSet[i].lastAccess),
+                                  bWidth: 360,
+                                  bHeight: 90,
+                                ),
+                                if (wordSet[i].isLoading)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black26,
+                                        borderRadius: BorderRadius.circular(15),
+                                      ),
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            SizedBox(height: 10),
+                          ],
+                        ),
+                    ],
+                  ),
                 ),
-            ],
-          ),
-        ),
-      ),
+              ),
     );
   }
 
@@ -282,5 +274,41 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       //success -> 로딩 컨테이너 삭제
       //fail -> 버튼 자체 삭제
     }*/
+  }
+
+  //나만의 단어장 리스트 호출 api
+  void _getWordSet() async {
+    //로딩 창 출력
+    setState(() {
+      isLoading = true;
+    });
+
+    //api 호출
+    var result = await MywordbooksService.getMyWordBookList();
+
+    if (mounted) {
+      if (result.isSuccess) {
+        setState(() {
+          wordSet = result.data;
+          isLoading = false;
+        });
+      } else {
+        if (result.title == "오류 발생") {
+          //오류 발생
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else if (result.title == "Token 재발급") {
+          //토큰 재발급 및 재실행 과정
+        } else {
+          //일반 실패 응답
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
   }
 }

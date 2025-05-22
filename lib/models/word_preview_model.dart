@@ -11,7 +11,17 @@ class WordPreviewModel {
 
   //api용
   WordPreviewModel.fromJson(Map<String, dynamic> json)
-    : wordId = json['wordId'],
+    : wordId = json['myWordId'],
       word = json['word'],
       meaning = json['meaning'];
+
+  @override
+  String toString() {
+    String result =
+        'WordPreviewModel(wordId: $wordId, '
+        'word: "$word", '
+        'meaning: "$meaning", )';
+
+    return result;
+  }
 }

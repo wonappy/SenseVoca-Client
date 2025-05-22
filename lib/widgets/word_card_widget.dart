@@ -28,6 +28,9 @@ class WordCard extends StatefulWidget {
 class _WordCardState extends State<WordCard> {
   final FlutterTts tts = FlutterTts(); //tts 호출
 
+  //api 호출 상태 -> t: 로딩 중, f: 호출 완료
+  bool isLoading = true;
+
   //디바이스 tts 종류 출력
   void printAvailableVoices() async {
     //FlutterTts tts = FlutterTts();
@@ -73,8 +76,6 @@ class _WordCardState extends State<WordCard> {
 
   @override
   Widget build(BuildContext context) {
-    String imageId = "1FFFZNQeMAqn-vZYFgyvlbKp0rife4pu0";
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Container(
@@ -150,7 +151,7 @@ class _WordCardState extends State<WordCard> {
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: NetworkImage(
-                        'https://drive.google.com/uc?export=view&id=$imageId',
+                        'https://drive.google.com/uc?export=view&id=${widget.word.mnemonicImageUrl}',
                       ),
                     ),
                   ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/main_wordbook_screen.dart';
 
 class WordSetButton extends StatelessWidget {
+  final int wordbookId;
   final String setName;
   final double bWidth;
   final double bHeight;
@@ -10,6 +11,7 @@ class WordSetButton extends StatelessWidget {
 
   const WordSetButton({
     super.key,
+    required this.wordbookId,
     required this.bWidth,
     required this.bHeight,
     required this.setName,
@@ -25,8 +27,11 @@ class WordSetButton extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder:
-                (context) =>
-                    MainWordBookScreen(setName: setName, wordCount: wordCount),
+                (context) => MainWordBookScreen(
+                  wordbookId: wordbookId,
+                  setName: setName,
+                  wordCount: wordCount,
+                ),
             fullscreenDialog: true,
           ),
         );

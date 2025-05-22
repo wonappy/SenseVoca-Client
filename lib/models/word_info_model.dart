@@ -14,7 +14,6 @@ class WordInfoModel {
     required this.meaning,
     required this.pronunciation,
     required this.mnemonicExample,
-
     required this.mnemonicImageUrl,
     required this.exampleSentenceEn,
     required this.exampleSentenceKo,
@@ -25,9 +24,24 @@ class WordInfoModel {
     : wordId = json['wordId'],
       word = json['word'],
       meaning = json['meaning'],
-      pronunciation = json['pronunciation'],
-      mnemonicExample = json['mnemonicExample'],
-      mnemonicImageUrl = json['mnemonicImageUrl'],
-      exampleSentenceEn = json['exampleSentenceEn'],
-      exampleSentenceKo = json['exampleSentenceKo'];
+      pronunciation = json['phoneticSymbol'],
+      mnemonicExample = json['association'],
+      mnemonicImageUrl = json['imageUrl'],
+      exampleSentenceEn = json['exampleEng'],
+      exampleSentenceKo = json['exampleKor'];
+
+  @override
+  String toString() {
+    String result =
+        'WordInfoModel(wordId: $wordId, '
+        'word: "$word", '
+        'meaning: "$meaning", '
+        'pronunciation: "$pronunciation", '
+        'mnemonicExample: "$mnemonicExample", '
+        'mnemonicImageUrl: "$mnemonicImageUrl", '
+        'exampleSentenceEn: "$exampleSentenceEn", '
+        'exampleSentenceKo: "$exampleSentenceKo", )';
+
+    return result;
+  }
 }
