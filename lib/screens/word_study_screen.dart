@@ -7,6 +7,7 @@ import '../styles/error_snack_bar_style.dart';
 import '../styles/white_to_orange_button_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_card_widget.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
 //단어 발음 국가 설정 (임시 데이터) -> 다른 곳으로 옮길 것
 enum Country { us, uk, aus }
@@ -47,6 +48,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
   //api 호출 상태 -> t: 로딩 중, f: 호출 완료
   bool isLoading = true;
+  bool isDisposed = false;
 
   //임시 데이터 [DB 역할]
   final List<WordInfoModel> dbWord = [
@@ -565,6 +567,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
   @override
   void dispose() {
     _animationController.dispose();
+    isDisposed = true;
     super.dispose();
   }
 
@@ -641,7 +644,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                   left: 5,
                   right: 5,
                   top: 10,
-                  bottom: 20,
+                  bottom: 10,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -930,12 +933,20 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
   //이미지 미리 가져오기
   Future<void> _precacheImages(List<WordInfoModel> wordList) async {
+    final cacheManager = DefaultCacheManager();
+
     for (var word in wordList) {
+      // try {
+      //   final image = NetworkImage(
+      //     "https://drive.google.com/uc?export=view&id=${word.mnemonicImageUrl}",
+      //   );
+      //   await precacheImage(image, context);
+      // }
+      if (isDisposed) break; //화면 나가면 다운로드 중지
       try {
-        final image = NetworkImage(
+        await cacheManager.getSingleFile(
           "https://drive.google.com/uc?export=view&id=${word.mnemonicImageUrl}",
-        );
-        await precacheImage(image, context);
+        ); // 디스크에 저장 -> 한 번 다운받아두면 오랫동안 저장해둘 수 있음
       } catch (e) {
         if (kDebugMode) {
           print(
