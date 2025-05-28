@@ -23,6 +23,8 @@ class CreateRandomWordBookScreen extends StatefulWidget {
 
 class _CreateRandomWordBookScreenState
     extends State<CreateRandomWordBookScreen> {
+  //초기 상태 확인 변수
+  bool isInitial = true;
   //임시 단어 목록
   final List<WordPreviewModel> wordPreviewList = [
     WordPreviewModel(
@@ -81,21 +83,7 @@ class _CreateRandomWordBookScreenState
   ];
 
   //단어장 단어 목록
-  List<WordPreviewModel> wordsInWordBook = [
-    WordPreviewModel(
-      wordId: 1,
-      word: "endeavor",
-      meaning: "[명] 노력, 시도; [동] 노력하다, 시도하다",
-    ),
-    WordPreviewModel(
-      wordId: 2,
-      word: "section",
-      meaning: "[명] (여러 개로 나뉜 것의 한) 부분, 부문",
-    ),
-    WordPreviewModel(wordId: 3, word: "surgeon", meaning: "[명] 외과 의사"),
-    WordPreviewModel(wordId: 4, word: "arctic", meaning: "[형] 북극의; [명] 북극"),
-    WordPreviewModel(wordId: 5, word: "elephant", meaning: "[명] 코끼리"),
-  ];
+  List<WordPreviewModel> wordsInWordBook = [];
   //랜덤 카드 목록
   List<WordPreviewModel> randomWords = [
     WordPreviewModel(
@@ -117,13 +105,72 @@ class _CreateRandomWordBookScreenState
     WordPreviewModel(wordId: 9, word: "ice", meaning: "[명] 얼음"),
     WordPreviewModel(wordId: 10, word: "juice", meaning: "[명] 주스"),
   ];
-  //초기 상태 확인 변수
-  bool isInitial = true;
+  //랜덤 카드 눌림 상태 저장 (카드 wordId 저장)
+  List<int> pressedCardsWordId = [];
 
   //초기 상태 변경
   void exitInitialState() {
     setState(() {
       isInitial = false;
+    });
+  }
+
+  //단어장 전체 선택
+  void selectAllWordCards() {
+    setState(() {
+      for (var word in randomWords) {
+        if (!pressedCardsWordId.contains(word.wordId)) {
+          pressedCardsWordId.add(word.wordId);
+        }
+        if (!wordsInWordBook.contains(word)) {
+          wordsInWordBook.add(word);
+        }
+      }
+    });
+  }
+
+  //단어장 전체 선택 해체
+  void deselectAllWordCards() {
+    setState(() {
+      for (var word in randomWords) {
+        if (pressedCardsWordId.contains(word.wordId)) {
+          pressedCardsWordId.remove(word.wordId);
+        }
+        if (wordsInWordBook.contains(word)) {
+          wordsInWordBook.remove(word);
+        }
+      }
+    });
+  }
+
+  //단어장 단어 삭제
+  void removeWord({required int wordId}) {
+    setState(() {
+      wordsInWordBook.removeWhere((word) => word.wordId == wordId);
+      //랜덤 버튼 중에 해당하는 버튼이 있다면 눌림 상태 해제
+      if (pressedCardsWordId.contains(wordId)) {
+        pressedCardsWordId.remove(wordId);
+      }
+    });
+  }
+
+  //랜덤 카드가 눌렸을 때,
+  void _toggleRandomWordCard({required WordPreviewModel word}) {
+    setState(() {
+      //랜덤 버튼 눌림 상태 갱신
+      if (pressedCardsWordId.contains(word.wordId)) {
+        pressedCardsWordId.remove(word.wordId);
+        //단어장 목록에서 제거
+        if (wordsInWordBook.contains(word)) {
+          wordsInWordBook.remove(word);
+        }
+      } else {
+        pressedCardsWordId.add(word.wordId);
+        //단어장 목록에 추가
+        if (!wordsInWordBook.contains(word)) {
+          wordsInWordBook.add(word);
+        }
+      }
     });
   }
 
@@ -181,7 +228,7 @@ class _CreateRandomWordBookScreenState
           crossAxisAlignment: CrossAxisAlignment.center,
 
           children: [
-            //선택된 단어 리스트
+            //선택된 단어 개수
             Align(
               alignment: Alignment.centerLeft,
               child: Text(
@@ -190,6 +237,7 @@ class _CreateRandomWordBookScreenState
               ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.013),
+            //선택된 단어 목록
             Container(
               width: MediaQuery.of(context).size.width * 0.9,
               height: MediaQuery.of(context).size.height * 0.27,
@@ -213,72 +261,82 @@ class _CreateRandomWordBookScreenState
                         ),
                       )
                       : Container(
+                        //선택된 단어장 단어 목록 출력
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 10,
                         ),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children:
-                                wordsInWordBook.map((word) {
-                                  return Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 5,
-                                            child: Text(
-                                              word.word,
-                                              style: TextStyle(
-                                                fontSize: 25,
-                                                fontWeight: FontWeight.w700,
+                        child: Scrollbar(
+                          thumbVisibility: true,
+                          thickness: 4,
+                          radius: Radius.circular(5),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children:
+                                  wordsInWordBook.map((word) {
+                                    return Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              flex: 5,
+                                              child: Text(
+                                                word.word,
+                                                style: TextStyle(
+                                                  fontSize: 25,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text(
-                                              word.meaning.replaceAll(
-                                                '; ',
-                                                '\n',
-                                              ),
-                                              style: TextStyle(fontSize: 12),
-                                            ),
-                                          ),
-                                          Expanded(
-                                            flex: 1,
-                                            child: IconButton(
-                                              padding: EdgeInsets.zero,
-                                              onPressed: () {},
-                                              icon: Icon(
-                                                Icons.remove_circle,
-                                                color: Colors.deepOrange,
+                                            Expanded(
+                                              flex: 4,
+                                              child: Text(
+                                                word.meaning.replaceAll(
+                                                  '; ',
+                                                  '\n',
+                                                ),
+                                                style: TextStyle(fontSize: 12),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      Divider(
-                                        color: Colors.black12,
-                                        thickness: 1.0,
-                                        height: 0.0,
-                                      ),
-                                    ],
-                                  );
-                                }).toList(),
+                                            Expanded(
+                                              flex: 1,
+                                              child: IconButton(
+                                                padding: EdgeInsets.zero,
+                                                onPressed:
+                                                    () => removeWord(
+                                                      wordId: word.wordId,
+                                                    ),
+                                                icon: Icon(
+                                                  Icons.remove_circle,
+                                                  color: Colors.deepOrange,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Divider(
+                                          color: Colors.black12,
+                                          thickness: 1.0,
+                                          height: 0.0,
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                            ),
                           ),
                         ),
                       ),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.03),
-            //랜덤 뽑기 단어
             Text(
               isInitial ? "단어 랜덤 뽑기 버튼을 눌러주세요." : "단어장에 포함될 단어를 선택해주세요.",
-              style: TextStyle(fontSize: 19, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
             ),
             SizedBox(height: MediaQuery.of(context).size.height * 0.01),
+            //랜덤 뽑기 단어
             Container(
               width: MediaQuery.of(context).size.width * 0.9,
               height: MediaQuery.of(context).size.height * 0.42,
@@ -320,7 +378,7 @@ class _CreateRandomWordBookScreenState
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
                                 ActionButtonWidget(
-                                  onPressed: () {},
+                                  onPressed: selectAllWordCards,
                                   paddingHorizontal: 15,
                                   paddingVertical: 5,
                                   foregroundColor: Color(0xFFFF983D),
@@ -332,7 +390,7 @@ class _CreateRandomWordBookScreenState
                                 ),
                                 SizedBox(width: 10),
                                 ActionButtonWidget(
-                                  onPressed: () {},
+                                  onPressed: deselectAllWordCards,
                                   paddingHorizontal: 15,
                                   paddingVertical: 5,
                                   foregroundColor: Color(0xFFFF983D),
@@ -348,7 +406,7 @@ class _CreateRandomWordBookScreenState
                             SizedBox(
                               height:
                                   MediaQuery.of(context).size.height *
-                                  0.28, // 원하는 높이로 고정
+                                  0.27, // 원하는 높이로 고정
                               child: GridView.builder(
                                 itemCount: randomWords.length,
                                 gridDelegate:
@@ -362,6 +420,13 @@ class _CreateRandomWordBookScreenState
                                   return RandomWordCardWidget(
                                     word: randomWords[index].word,
                                     meaning: randomWords[index].meaning,
+                                    isPressed: pressedCardsWordId.contains(
+                                      randomWords[index].wordId,
+                                    ),
+                                    onPressed:
+                                        () => _toggleRandomWordCard(
+                                          word: randomWords[index],
+                                        ),
                                   );
                                 },
                               ),
