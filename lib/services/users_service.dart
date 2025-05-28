@@ -8,21 +8,21 @@ import 'package:sense_voka/models/user_model.dart';
 class UsersService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://10.101.18.156:8080/api/users";
+  static const String baseUrl = "http://10.101.137.171:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
     final url = Uri.parse('$baseUrl/$email/check-email');
     ApiResponseModel returnMsg;
 
+    if (kDebugMode) {
+      print('getCheckEmailDuplicate 호출');
+    }
+
     try {
       final response = await http.get(url);
 
       final dynamic result = jsonDecode(response.body);
-
-      // print("[응답 상태] ${response.statusCode}");
-      // print("[응답 본문] '${response.body}'");
-      // print("[본문 길이] ${response.body.length}");
 
       //중복되지 않은 이메일
       if (response.statusCode == 200 && result['data'] == false) {
@@ -64,6 +64,10 @@ class UsersService {
   ) async {
     final url = Uri.parse('$baseUrl/signup');
     ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('postSignUp 호출');
+    }
 
     try {
       final response = await http.post(
@@ -118,6 +122,10 @@ class UsersService {
   }) async {
     final url = Uri.parse('$baseUrl/login');
     ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('postSignIn 호출');
+    }
 
     try {
       final response = await http.post(
@@ -189,6 +197,10 @@ class UsersService {
   }) async {
     final url = Uri.parse('$baseUrl/token');
     ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('postJWTToken 호출');
+    }
 
     try {
       final response = await http.post(

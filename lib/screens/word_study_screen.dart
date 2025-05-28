@@ -891,7 +891,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     });
 
     //api 호출
-    var result = await MywordbooksService.getMyWordsInfo(
+    var result = await MywordbooksService.postMyWordsInfo(
       wordIdList: wordList,
       country: country,
     );

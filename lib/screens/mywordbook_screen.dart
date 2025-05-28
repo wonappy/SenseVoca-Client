@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:sense_voka/screens/input_myword_screen.dart';
-import 'package:sense_voka/screens/random_wordbook_screen.dart';
+import 'package:sense_voka/screens/create_random_wordbook_screen.dart';
 import 'package:sense_voka/services/mywordbooks_service.dart';
 import 'package:sense_voka/widgets/navigation_button_widget.dart';
 
@@ -235,7 +235,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
                         bWidth: MediaQuery.of(context).size.width * 0.09,
                         bHeight: MediaQuery.of(context).size.height * 0.05,
                         fontSize: 20,
-                        destinationScreen: RandomWordBookScreen(),
+                        destinationScreen: CreateRandomWordBookScreen(),
                         popBeforePush: true,
                       ),
                     ],
