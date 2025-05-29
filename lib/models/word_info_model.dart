@@ -7,6 +7,7 @@ class WordInfoModel {
   final String mnemonicImageUrl; //연상 예문 이미지
   final String exampleSentenceEn; //영어 예문
   final String exampleSentenceKo; //영어 예문 한글 번역
+  final bool favorite; //즐겨찾기 여부
 
   WordInfoModel({
     required this.wordId,
@@ -17,6 +18,7 @@ class WordInfoModel {
     required this.mnemonicImageUrl,
     required this.exampleSentenceEn,
     required this.exampleSentenceKo,
+    required this.favorite,
   });
 
   //api용
@@ -28,7 +30,8 @@ class WordInfoModel {
       mnemonicExample = json['association'],
       mnemonicImageUrl = json['imageUrl'],
       exampleSentenceEn = json['exampleEng'],
-      exampleSentenceKo = json['exampleKor'];
+      exampleSentenceKo = json['exampleKor'],
+      favorite = json['favorite'];
 
   @override
   String toString() {
@@ -40,7 +43,8 @@ class WordInfoModel {
         'mnemonicExample: "$mnemonicExample", '
         'mnemonicImageUrl: "$mnemonicImageUrl", '
         'exampleSentenceEn: "$exampleSentenceEn", '
-        'exampleSentenceKo: "$exampleSentenceKo", )';
+        'exampleSentenceKo: "$exampleSentenceKo", '
+        'favorite: "$favorite",)';
 
     return result;
   }

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/word_preview_model.dart';
 import '../widgets/action_button_widget.dart';
 import '../widgets/random_word_card_widget.dart';
+import '../widgets/show_dialog_widget.dart';
+import 'create_mywordbook_screen.dart';
 
 //먼저 들어왔을 때 모달 창 켜기
 //api 결과를 기다리는 동안 progress bar 띄우고
@@ -108,6 +110,9 @@ class _CreateRandomWordBookScreenState
   //랜덤 카드 눌림 상태 저장 (카드 wordId 저장)
   List<int> pressedCardsWordId = [];
 
+  OverlayEntry? _pickerOverlay;
+  late int _pickCount;
+
   //초기 상태 변경
   void exitInitialState() {
     setState(() {
@@ -200,7 +205,36 @@ class _CreateRandomWordBookScreenState
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                //값을 갖는 카드가 존재한다면,
+                if (wordsInWordBook.isEmpty) {
+                  showDialogWidget(
+                    context: context,
+                    title: "경고",
+                    msg: "단어장에 포함된 단어가 없습니다. \n 최소 1개의 단어가 필요합니다.",
+                  );
+                  return;
+                }
+
+                List<Map<String, String>> wordMeaningList =
+                    wordsInWordBook
+                        .map(
+                          (word) => {
+                            "word": word.word,
+                            "meaning": word.meaning,
+                          },
+                        )
+                        .toList();
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder:
+                        (context) =>
+                            CreateMywordbookScreen(wordsInfo: wordMeaningList),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
@@ -435,7 +469,7 @@ class _CreateRandomWordBookScreenState
                             Align(
                               alignment: Alignment.bottomRight,
                               child: ActionButtonWidget(
-                                onPressed: () {},
+                                onPressed: () => _showPickCountOverlay(context),
                                 paddingHorizontal: 15,
                                 paddingVertical: 5,
                                 foregroundColor: Colors.white,
@@ -454,5 +488,101 @@ class _CreateRandomWordBookScreenState
         ),
       ),
     );
+  }
+
+  void _showPickCountOverlay(BuildContext context) {
+    _pickCount = 5;
+    if (_pickerOverlay != null) return;
+
+    final overlay = Overlay.of(context);
+    final renderBox = context.findRenderObject() as RenderBox;
+    final size = renderBox.size;
+    final offset = renderBox.localToGlobal(Offset.zero);
+
+    _pickerOverlay = OverlayEntry(
+      builder:
+          (context) => Positioned(
+            bottom: MediaQuery.of(context).size.height * 0.13, // 버튼 위로 약간 위
+            left: MediaQuery.of(context).size.width * 0.1,
+            right: MediaQuery.of(context).size.width * 0.1,
+            child: Material(
+              borderRadius: BorderRadius.circular(20),
+              elevation: 10,
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          "뽑을 단어의 개수를 설정해주세요.",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            _pickerOverlay?.remove();
+                            _pickerOverlay = null;
+                          },
+                          icon: Icon(Icons.cancel_sharp),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.remove),
+                          onPressed: () {
+                            setState(() {
+                              if (_pickCount > 1) _pickCount--;
+                            });
+                          },
+                        ),
+                        Text("$_pickCount개", style: TextStyle(fontSize: 20)),
+                        IconButton(
+                          icon: Icon(Icons.add),
+                          onPressed: () {
+                            setState(() {
+                              if (_pickCount < 20) _pickCount++;
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () {
+                        _pickerOverlay?.remove();
+                        _pickerOverlay = null;
+                        _pickRandomWords(_pickCount);
+                      },
+                      child: Text("뽑기"),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+    );
+
+    overlay.insert(_pickerOverlay!);
+  }
+
+  void _pickRandomWords(int count) {
+    final shuffled = [...wordPreviewList]..shuffle();
+    setState(() {
+      randomWords = shuffled.take(count).toList();
+      pressedCardsWordId.clear();
+      isInitial = false;
+    });
   }
 }

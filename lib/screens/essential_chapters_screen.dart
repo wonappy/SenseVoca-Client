@@ -422,6 +422,7 @@ class _EssentialChaptersScreenState extends State<EssentialChaptersScreen> {
                 Column(
                   children: [
                     EssentialChapterButton(
+                      chapterId: chapters[i].chapterId,
                       title: chapters[i].title,
                       wordCount: chapters[i].wordCount,
                       lastAccess:

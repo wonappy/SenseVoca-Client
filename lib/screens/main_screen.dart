@@ -335,7 +335,7 @@ class _MainScreenState extends State<MainScreen> {
               ),
               SizedBox(height: 10),
               NavigationButtonWidget(
-                text: "복습 단어장",
+                text: "즐겨찾기 단어장",
                 bHeight: 90,
                 bWidth: 360,
                 destinationScreen: MyWordBookScreen(),

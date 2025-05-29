@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../models/word_set_info_model.dart';
+import '../models/word_book_info_model.dart';
 
 class MyWordbookListProvider with ChangeNotifier {
   List<WordBookInfoModel> wordSets = [

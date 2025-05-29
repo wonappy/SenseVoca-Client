@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sense_voka/screens/input_myword_screen.dart';
+import 'package:sense_voka/screens/create_mywordcard_screen.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
 import 'package:sense_voka/widgets/show_dialog_widget.dart';
 
-import '../models/word_set_info_model.dart';
+import '../models/word_book_info_model.dart';
 import '../widgets/show_confirm_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
 

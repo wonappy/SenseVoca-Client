@@ -4,6 +4,7 @@ import 'package:marquee/marquee.dart';
 import '../screens/main_wordbook_screen.dart';
 
 class EssentialChapterButton extends StatefulWidget {
+  final int chapterId;
   final String title;
   final int wordCount;
   final String? lastAccess;
@@ -11,6 +12,7 @@ class EssentialChapterButton extends StatefulWidget {
 
   const EssentialChapterButton({
     super.key,
+    required this.chapterId,
     required this.title,
     required this.wordCount,
     this.lastAccess,
@@ -48,6 +50,7 @@ class _EssentialChapterButtonState extends State<EssentialChapterButton> {
             MaterialPageRoute(
               builder:
                   (context) => MainWordBookScreen(
+                    wordbookId: widget.chapterId,
                     setName: widget.title,
                     wordCount: widget.wordCount,
                   ),
