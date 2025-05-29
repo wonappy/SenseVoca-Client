@@ -2,12 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:sense_voka/screens/input_myword_screen.dart';
+import 'package:sense_voka/screens/create_mywordcard_screen.dart';
 import 'package:sense_voka/screens/create_random_wordbook_screen.dart';
 import 'package:sense_voka/services/mywordbooks_service.dart';
+import 'package:sense_voka/widgets/callback_button_widget.dart';
 import 'package:sense_voka/widgets/navigation_button_widget.dart';
 
-import '../models/word_set_info_model.dart';
+import '../models/word_book_info_model.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_set_button_widget.dart';
@@ -221,21 +222,27 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      NavigationButtonWidget(
+                      CallbackButtonWidget(
                         text: "직접 입력",
                         bWidth: MediaQuery.of(context).size.width * 0.09,
                         bHeight: MediaQuery.of(context).size.height * 0.05,
                         fontSize: 20,
-                        destinationScreen: InputMyWordScreen(),
+                        onPressed:
+                            () => _createMyWordBookScreen(
+                              destinationScreen: CreateMyWordCardScreen(),
+                            ),
                         popBeforePush: true,
                       ),
                       SizedBox(width: MediaQuery.of(context).size.width * 0.02),
-                      NavigationButtonWidget(
+                      CallbackButtonWidget(
                         text: "랜덤 생성",
                         bWidth: MediaQuery.of(context).size.width * 0.09,
                         bHeight: MediaQuery.of(context).size.height * 0.05,
                         fontSize: 20,
-                        destinationScreen: CreateRandomWordBookScreen(),
+                        onPressed:
+                            () => _createMyWordBookScreen(
+                              destinationScreen: CreateRandomWordBookScreen(),
+                            ),
                         popBeforePush: true,
                       ),
                     ],
@@ -245,10 +252,13 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
             ),
           ),
     );
+  }
 
-    /*final popResult = await Navigator.push(
+  //단어장 생성 화면 호출 및 api 호출 로딩...
+  void _createMyWordBookScreen({required Widget destinationScreen}) async {
+    final popResult = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => InputMyWordScreen()),
+      MaterialPageRoute(builder: (context) => destinationScreen),
     );
 
     if (popResult is Map) {
@@ -257,8 +267,8 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       final String title = popResult["title"];
       final words = popResult["words"];
 
-      WordSetInfoModel newWordbook = WordSetInfoModel(
-        wordSetId: wordSet.last.wordSetId + 1, //아이디가 겹치지 않도록...
+      WordBookInfoModel newWordbook = WordBookInfoModel(
+        wordBookId: wordSet.last.wordBookId + 1, //아이디가 겹치지 않도록...
         title: title,
         wordCount: words.length,
         createDate: DateTime.now(),
@@ -273,7 +283,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       //api 호출 및 결과 처리
       //success -> 로딩 컨테이너 삭제
       //fail -> 버튼 자체 삭제
-    }*/
+    }
   }
 
   //나만의 단어장 리스트 호출 api

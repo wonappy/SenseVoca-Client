@@ -9,13 +9,13 @@ import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 
 class MainWordBookScreen extends StatefulWidget {
-  final int? wordbookId; //나중에 required로 바꿔ㅏ
+  final int wordbookId; //나중에 required로 바꿔ㅏ
   final String setName;
   final int wordCount;
 
   const MainWordBookScreen({
     super.key,
-    this.wordbookId,
+    required this.wordbookId,
     required this.setName,
     required this.wordCount,
   });

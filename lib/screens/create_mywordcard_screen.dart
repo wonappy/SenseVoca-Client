@@ -4,14 +4,14 @@ import '../widgets/new_word_card_widget.dart';
 import '../widgets/show_dialog_widget.dart';
 import 'create_mywordbook_screen.dart';
 
-class InputMyWordScreen extends StatefulWidget {
-  const InputMyWordScreen({super.key});
+class CreateMyWordCardScreen extends StatefulWidget {
+  const CreateMyWordCardScreen({super.key});
 
   @override
-  State<InputMyWordScreen> createState() => _InputMyWordScreenState();
+  State<CreateMyWordCardScreen> createState() => _CreateMyWordCardScreenState();
 }
 
-class _InputMyWordScreenState extends State<InputMyWordScreen>
+class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
     with TickerProviderStateMixin {
   //단어 카드 리스트
   List<Map<String, String>> wordCards = [

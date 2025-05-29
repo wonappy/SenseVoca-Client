@@ -7,6 +7,7 @@ class CallbackButtonWidget extends StatefulWidget {
   final double? fontSize;
   final bool? isPressed;
   final VoidCallback? onPressed;
+  final bool? popBeforePush;
 
   const CallbackButtonWidget({
     super.key,
@@ -16,6 +17,7 @@ class CallbackButtonWidget extends StatefulWidget {
     this.fontSize,
     this.isPressed,
     this.onPressed,
+    this.popBeforePush,
   });
 
   @override
@@ -26,7 +28,16 @@ class _CallbackButtonWidgetState extends State<CallbackButtonWidget> {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: widget.onPressed,
+      onPressed: () {
+        //누르기 전에 버튼 창 닫기 활성화
+        if (widget.popBeforePush == true) {
+          Navigator.pop(context);
+        }
+
+        if (widget.onPressed != null) {
+          widget.onPressed!();
+        }
+      },
       style: ButtonStyle(
         animationDuration: Duration.zero, //foregroundColor 글자 색상 변경 애니메이션 제거
         foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {

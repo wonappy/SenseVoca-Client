@@ -6,12 +6,12 @@ import 'package:sense_voka/models/api_response.dart';
 import 'package:sense_voka/models/word_preview_model.dart';
 
 import '../models/word_info_model.dart';
-import '../models/word_set_info_model.dart';
+import '../models/word_book_info_model.dart';
 
 class MywordbooksService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://10.101.137.171:8080/api/mywordbooks";
+  static const String baseUrl = "http://192.168.1.2:8080/api/mywordbooks";
 
   //나만의 단어장 리스트 가져오기
   static Future<ApiResponseModel> getMyWordBookList() async {

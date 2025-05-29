@@ -22,6 +22,7 @@ class App extends StatelessWidget {
     //     ),
     //   ),
     // );
-    return MaterialApp(home: SignInScreen());
+
+    return MaterialApp(debugShowCheckedModeBanner: false, home: SignInScreen());
   }
 }
