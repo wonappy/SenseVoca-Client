@@ -87,7 +87,7 @@ class _RandomWordCardWidgetState extends State<RandomWordCardWidget> {
             textAlign: TextAlign.center,
             softWrap: true, //자동 줄바꿈 허용
             overflow: TextOverflow.ellipsis,
-            maxLines: 3,
+            maxLines: 2,
             style: TextStyle(
               fontSize: 8,
               fontWeight: widget.isPressed ? FontWeight.w700 : FontWeight.w500,
