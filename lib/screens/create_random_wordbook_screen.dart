@@ -1,6 +1,10 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../models/word_preview_model.dart';
+import '../styles/orange_button_style.dart';
+import '../styles/white_to_orange_button_style.dart';
 import '../widgets/action_button_widget.dart';
 import '../widgets/random_word_card_widget.dart';
 import '../widgets/show_dialog_widget.dart';
@@ -25,6 +29,9 @@ class CreateRandomWordBookScreen extends StatefulWidget {
 
 class _CreateRandomWordBookScreenState
     extends State<CreateRandomWordBookScreen> {
+  //상단 container 스크롤 컨트롤러
+  final ScrollController _selectedWordScrollController = ScrollController();
+
   //초기 상태 확인 변수
   bool isInitial = true;
   //임시 단어 목록
@@ -41,47 +48,87 @@ class _CreateRandomWordBookScreenState
     ),
     WordPreviewModel(wordId: 3, word: "surgeon", meaning: "[명] 외과 의사"),
     WordPreviewModel(wordId: 4, word: "arctic", meaning: "[형] 북극의; [명] 북극"),
-    WordPreviewModel(wordId: 5, word: "elephant", meaning: "[명] 코끼리"),
-    WordPreviewModel(wordId: 6, word: "flower", meaning: "[명] 꽃"),
-    WordPreviewModel(wordId: 7, word: "grape", meaning: "[명] 포도"),
-    WordPreviewModel(wordId: 8, word: "house", meaning: "[명] 집"),
-    WordPreviewModel(wordId: 9, word: "ice", meaning: "[명] 얼음"),
-    WordPreviewModel(wordId: 10, word: "juice", meaning: "[명] 주스"),
-    WordPreviewModel(wordId: 11, word: "kite", meaning: "[명] 연"),
-    WordPreviewModel(wordId: 12, word: "lion", meaning: "[명] 사자"),
-    WordPreviewModel(wordId: 13, word: "moon", meaning: "[명] 달"),
-    WordPreviewModel(wordId: 14, word: "notebook", meaning: "[명] 공책"),
-    WordPreviewModel(wordId: 15, word: "orange", meaning: "[명] 오렌지"),
-    WordPreviewModel(wordId: 16, word: "pencil", meaning: "[명] 연필"),
-    WordPreviewModel(wordId: 17, word: "queen", meaning: "[명] 여왕"),
-    WordPreviewModel(wordId: 18, word: "rabbit", meaning: "[명] 토끼"),
-    WordPreviewModel(wordId: 19, word: "sun", meaning: "[명] 태양"),
-    WordPreviewModel(wordId: 20, word: "tree", meaning: "[명] 나무"),
-    WordPreviewModel(wordId: 21, word: "umbrella", meaning: "[명] 우산"),
-    WordPreviewModel(wordId: 22, word: "violin", meaning: "[명] 바이올린"),
-    WordPreviewModel(wordId: 23, word: "whale", meaning: "[명] 고래"),
-    WordPreviewModel(wordId: 24, word: "xylophone", meaning: "[명] 실로폰"),
-    WordPreviewModel(wordId: 25, word: "yogurt", meaning: "[명] 요구르트"),
-    WordPreviewModel(wordId: 26, word: "zebra", meaning: "[명] 얼룩말"),
-    WordPreviewModel(wordId: 27, word: "ball", meaning: "[명] 공"),
-    WordPreviewModel(wordId: 28, word: "candle", meaning: "[명] 양초"),
-    WordPreviewModel(wordId: 29, word: "desk", meaning: "[명] 책상"),
-    WordPreviewModel(wordId: 30, word: "ear", meaning: "[명] 귀"),
-    WordPreviewModel(wordId: 31, word: "fan", meaning: "[명] 선풍기"),
-    WordPreviewModel(wordId: 32, word: "glove", meaning: "[명] 장갑"),
-    WordPreviewModel(wordId: 33, word: "hat", meaning: "[명] 모자"),
-    WordPreviewModel(wordId: 34, word: "island", meaning: "[명] 섬"),
-    WordPreviewModel(wordId: 35, word: "jacket", meaning: "[명] 재킷"),
-    WordPreviewModel(wordId: 36, word: "key", meaning: "[명] 열쇠"),
-    WordPreviewModel(wordId: 37, word: "lamp", meaning: "[명] 램프"),
-    WordPreviewModel(wordId: 38, word: "mirror", meaning: "[명] 거울"),
-    WordPreviewModel(wordId: 39, word: "necklace", meaning: "[명] 목걸이"),
-    WordPreviewModel(wordId: 40, word: "ocean", meaning: "[명] 바다"),
-    WordPreviewModel(wordId: 41, word: "piano", meaning: "[명] 피아노"),
-    WordPreviewModel(wordId: 42, word: "quilt", meaning: "[명] 누비이불"),
-    WordPreviewModel(wordId: 43, word: "ring", meaning: "[명] 반지"),
-    WordPreviewModel(wordId: 44, word: "sock", meaning: "[명] 양말"),
-    WordPreviewModel(wordId: 45, word: "telephone", meaning: "[명] 전화기"),
+    WordPreviewModel(wordId: 5, word: "antarctic", meaning: "[형] 남극의; [명] 남극"),
+    WordPreviewModel(wordId: 6, word: "fulfill", meaning: "[동] 이행하다, 달성하다"),
+    WordPreviewModel(wordId: 7, word: "bullet", meaning: "[명] 탄알, 총알"),
+    WordPreviewModel(wordId: 8, word: "cereal", meaning: "[명] 곡물, 시리얼"),
+    WordPreviewModel(
+      wordId: 9,
+      word: "deadly",
+      meaning: "[형] 치명적인; [부] 몹시, 대단히",
+    ),
+    WordPreviewModel(
+      wordId: 10,
+      word: "harm",
+      meaning: "[명] 해, 손해; [동] 해를 끼치다",
+    ),
+    WordPreviewModel(wordId: 11, word: "fantasy", meaning: "[명] 공상, 환상"),
+    WordPreviewModel(
+      wordId: 12,
+      word: "emigrant",
+      meaning: "[명] (다른 나라로 가는) 이민, 이주자; [동] (타국으로) 이주하는",
+    ),
+    WordPreviewModel(wordId: 13, word: "leather", meaning: "[명] 가죽; [형] 가죽의"),
+    WordPreviewModel(wordId: 14, word: "dynasty", meaning: "[명] 왕조, 왕가"),
+    WordPreviewModel(wordId: 15, word: "column", meaning: "[명] (신문 등의) 난, 칼럼"),
+    WordPreviewModel(wordId: 16, word: "soul", meaning: "[명] 정신, 영혼"),
+    WordPreviewModel(wordId: 17, word: "pet", meaning: "[명] 애완동물"),
+    WordPreviewModel(wordId: 18, word: "bundle", meaning: "[명] 묶음, 다발"),
+    WordPreviewModel(wordId: 19, word: "competition", meaning: "[명] 경쟁, 시합"),
+    WordPreviewModel(wordId: 20, word: "competence", meaning: "[명] 능력, 능숙"),
+    WordPreviewModel(
+      wordId: 21,
+      word: "recommend",
+      meaning: "[동] 추천하다, ~을 권하다",
+    ),
+    WordPreviewModel(wordId: 22, word: "dew", meaning: "[명] 이슬"),
+    WordPreviewModel(
+      wordId: 23,
+      word: "annoy",
+      meaning: "[동] 짜증나게 하다, 성가시게 굴다",
+    ),
+    WordPreviewModel(wordId: 24, word: "possess", meaning: "[동] 소유하다, 지니다"),
+    WordPreviewModel(wordId: 25, word: "spot", meaning: "[동] 더럽히다, 발견하다"),
+    WordPreviewModel(
+      wordId: 26,
+      word: "bow",
+      meaning: "[명] 활, 경례; [동] 활처럼 휘다, (인사, 예배 등을 위해) 머리를 숙이다",
+    ),
+    WordPreviewModel(wordId: 27, word: "head", meaning: "[명] 머리; [동] 이끌다, 향하다"),
+    WordPreviewModel(wordId: 28, word: "precious", meaning: "[형] 귀중한, 값비싼"),
+    WordPreviewModel(
+      wordId: 29,
+      word: "fury",
+      meaning: "[명] 분노, 격분, (날씨, 속도 등이) 맹렬함, 격심함",
+    ),
+    WordPreviewModel(
+      wordId: 30,
+      word: "feed",
+      meaning: "[명] 먹이; [동] 먹이를 주다, 음식을 먹이다, 먹다",
+    ),
+    WordPreviewModel(wordId: 31, word: "punctual", meaning: "[형] 시간을 엄수하는"),
+    WordPreviewModel(wordId: 32, word: "myth", meaning: "[명] 신화, (근거 없는) 이야기"),
+    WordPreviewModel(wordId: 33, word: "peculiar", meaning: "[형] 기묘한, 독특한'"),
+    WordPreviewModel(wordId: 34, word: "queer", meaning: "[형] 기묘한, 괴상한"),
+    WordPreviewModel(wordId: 35, word: "naughty", meaning: "[형] 장난꾸러기의, 버릇없는"),
+    WordPreviewModel(
+      wordId: 36,
+      word: "avalanche",
+      meaning: "[명] 눈사태, 산사태; [명] 쇄도",
+    ),
+    WordPreviewModel(wordId: 37, word: "riddle", meaning: "[명] 수수께끼"),
+    WordPreviewModel(wordId: 38, word: "realm", meaning: "[명] 왕국, 범위, 영역"),
+    WordPreviewModel(wordId: 39, word: "pile", meaning: "[동] 쌓다; [명] 쌓아올린 더미"),
+    WordPreviewModel(wordId: 40, word: "paw", meaning: "[명] (동물의) 발"),
+    WordPreviewModel(wordId: 41, word: "mummy", meaning: "[명] 미라"),
+    WordPreviewModel(wordId: 42, word: "legacy", meaning: "[명] 유산"),
+    WordPreviewModel(wordId: 43, word: "hay", meaning: "[명] 건초; [동] 건초를 만들다"),
+    WordPreviewModel(
+      wordId: 44,
+      word: "oblige",
+      meaning: "[동] 어쩔 수 없이 ~하게 하다, 억지로 시키다",
+    ),
+    WordPreviewModel(wordId: 45, word: "contemplate", meaning: "[동] 심사숙고하다"),
   ];
 
   //단어장 단어 목록
@@ -110,13 +157,30 @@ class _CreateRandomWordBookScreenState
   //랜덤 카드 눌림 상태 저장 (카드 wordId 저장)
   List<int> pressedCardsWordId = [];
 
-  OverlayEntry? _pickerOverlay;
+  OverlayEntry? _pickerOverlay; //모달 창 여러개 출력 방지
   late int _pickCount;
 
   //초기 상태 변경
   void exitInitialState() {
     setState(() {
       isInitial = false;
+      pickRandomWords(count: 10);
+    });
+  }
+
+  @override
+  void dispose() {
+    _selectedWordScrollController.dispose();
+    super.dispose();
+  }
+
+  //단어 랜덤 뽑기
+  void pickRandomWords({required int count}) {
+    final shuffledList = List<WordPreviewModel>.from(wordPreviewList)
+      ..shuffle(Random()); //중복 x
+    setState(() {
+      randomWords = shuffledList.take(count).toList(); //랜덤 카드 리스트 제공
+      pressedCardsWordId.clear(); //눌렸던 랜덤 카드 저장 리스트 초기화
     });
   }
 
@@ -131,6 +195,18 @@ class _CreateRandomWordBookScreenState
           wordsInWordBook.add(word);
         }
       }
+
+      // 단어 추가 후 추가된 위치로 스크롤 이동
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        //프레임이 종료된 직후 실행
+        if (_selectedWordScrollController.hasClients) {
+          _selectedWordScrollController.animateTo(
+            _selectedWordScrollController.position.maxScrollExtent,
+            duration: Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+      });
     });
   }
 
@@ -174,6 +250,18 @@ class _CreateRandomWordBookScreenState
         //단어장 목록에 추가
         if (!wordsInWordBook.contains(word)) {
           wordsInWordBook.add(word);
+
+          // 단어 추가 후 추가된 위치로 스크롤 이동
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            //프레임이 종료된 직후 실행
+            if (_selectedWordScrollController.hasClients) {
+              _selectedWordScrollController.animateTo(
+                _selectedWordScrollController.position.maxScrollExtent,
+                duration: Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+              );
+            }
+          });
         }
       }
     });
@@ -305,6 +393,8 @@ class _CreateRandomWordBookScreenState
                           thickness: 4,
                           radius: Radius.circular(5),
                           child: SingleChildScrollView(
+                            controller:
+                                _selectedWordScrollController, //스크롤 컨트롤러 추가
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children:
@@ -491,8 +581,8 @@ class _CreateRandomWordBookScreenState
   }
 
   void _showPickCountOverlay(BuildContext context) {
-    _pickCount = 5;
     if (_pickerOverlay != null) return;
+    _pickCount = 5; //초기의 뽑을 단어 개수
 
     final overlay = Overlay.of(context);
     final renderBox = context.findRenderObject() as RenderBox;
@@ -502,87 +592,134 @@ class _CreateRandomWordBookScreenState
     _pickerOverlay = OverlayEntry(
       builder:
           (context) => Positioned(
-            bottom: MediaQuery.of(context).size.height * 0.13, // 버튼 위로 약간 위
-            left: MediaQuery.of(context).size.width * 0.1,
-            right: MediaQuery.of(context).size.width * 0.1,
+            bottom: MediaQuery.of(context).size.height * 0.12, // 버튼 위로 약간 위
+            left: MediaQuery.of(context).size.width * 0.12,
+            right: MediaQuery.of(context).size.width * 0.08,
             child: Material(
               borderRadius: BorderRadius.circular(20),
-              elevation: 10,
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          "뽑을 단어의 개수를 설정해주세요.",
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+              elevation: 7,
+              child: StatefulBuilder(
+                builder:
+                    (context, setStateOverlay) => Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 15),
+                            child: Row(
+                              children: [
+                                Text(
+                                  "뽑을 단어의 개수를 설정해주세요.",
+                                  style: TextStyle(fontSize: 13.5),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    _pickerOverlay?.remove();
+                                    _pickerOverlay = null;
+                                  },
+                                  icon: Icon(
+                                    Icons.close_rounded,
+                                    color: Colors.black,
+                                    size: 30,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            _pickerOverlay?.remove();
-                            _pickerOverlay = null;
-                          },
-                          icon: Icon(Icons.cancel_sharp),
-                        ),
-                      ],
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.013,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              ElevatedButton(
+                                style: orangeButtonStyle(width: 50, heigth: 40),
+                                onPressed: () {
+                                  setStateOverlay(() {
+                                    if (_pickCount > 1) _pickCount--;
+                                  });
+                                },
+                                child: Text(
+                                  "-",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 30,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.05,
+                              ),
+                              Text.rich(
+                                TextSpan(
+                                  text: "$_pickCount", // 기본 텍스트
+                                  style: TextStyle(
+                                    fontSize: 35,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                  children: [
+                                    TextSpan(text: ' '),
+                                    TextSpan(
+                                      text: '개',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.05,
+                              ),
+                              ElevatedButton(
+                                style: orangeButtonStyle(width: 50, heigth: 40),
+                                onPressed: () {
+                                  setStateOverlay(() {
+                                    if (_pickCount < 20) _pickCount++;
+                                  });
+                                },
+                                child: Text(
+                                  "+",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 30,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.02,
+                          ),
+                          ElevatedButton(
+                            style: orangeButtonStyle(width: 120, heigth: 45),
+                            onPressed: () {
+                              _pickerOverlay?.remove();
+                              _pickerOverlay = null;
+                              pickRandomWords(count: _pickCount);
+                            },
+                            child: Text(
+                              "뽑기",
+                              style: TextStyle(
+                                fontSize: 25,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.remove),
-                          onPressed: () {
-                            setState(() {
-                              if (_pickCount > 1) _pickCount--;
-                            });
-                          },
-                        ),
-                        Text("$_pickCount개", style: TextStyle(fontSize: 20)),
-                        IconButton(
-                          icon: Icon(Icons.add),
-                          onPressed: () {
-                            setState(() {
-                              if (_pickCount < 20) _pickCount++;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        _pickerOverlay?.remove();
-                        _pickerOverlay = null;
-                        _pickRandomWords(_pickCount);
-                      },
-                      child: Text("뽑기"),
-                    ),
-                  ],
-                ),
               ),
             ),
           ),
     );
 
     overlay.insert(_pickerOverlay!);
-  }
-
-  void _pickRandomWords(int count) {
-    final shuffled = [...wordPreviewList]..shuffle();
-    setState(() {
-      randomWords = shuffled.take(count).toList();
-      pressedCardsWordId.clear();
-      isInitial = false;
-    });
   }
 }
