@@ -8,7 +8,7 @@ import 'package:sense_voka/models/user_model.dart';
 class UsersService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://192.168.1.2:8080/api/users";
+  static const String baseUrl = "http://10.101.164.81:8080/api/users";
 
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
@@ -156,8 +156,6 @@ class UsersService {
         await storage.write(key: "AccessToken", value: data['accessToken']);
         await storage.write(key: "RefreshToken", value: data['refreshToken']);
 
-        final all = await storage.readAll();
-
         final userJson = jsonEncode({
           'userId': user.userId,
           'email': user.email,
@@ -220,7 +218,9 @@ class UsersService {
 
         //저장소 토큰 로컬 갱신
         await storage.write(key: "AccessToken", value: data);
-        print("토큰 값 : $data");
+        if (kDebugMode) {
+          print("토큰 값 : $data");
+        }
 
         returnMsg = ApiResponseModel(
           isSuccess: true,
