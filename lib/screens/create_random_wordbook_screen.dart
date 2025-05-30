@@ -3,8 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../models/word_preview_model.dart';
+import '../services/mywordbooks_service.dart';
+import '../styles/error_snack_bar_style.dart';
 import '../styles/orange_button_style.dart';
-import '../styles/white_to_orange_button_style.dart';
 import '../widgets/action_button_widget.dart';
 import '../widgets/random_word_card_widget.dart';
 import '../widgets/show_dialog_widget.dart';
@@ -34,126 +35,10 @@ class _CreateRandomWordBookScreenState
 
   //초기 상태 확인 변수
   bool isInitial = true;
-  //임시 단어 목록
-  final List<WordPreviewModel> wordPreviewList = [
-    WordPreviewModel(
-      wordId: 1,
-      word: "endeavor",
-      meaning: "[명] 노력, 시도; [동] 노력하다, 시도하다",
-    ),
-    WordPreviewModel(
-      wordId: 2,
-      word: "section",
-      meaning: "[명] (여러 개로 나뉜 것의 한) 부분, 부문",
-    ),
-    WordPreviewModel(wordId: 3, word: "surgeon", meaning: "[명] 외과 의사"),
-    WordPreviewModel(wordId: 4, word: "arctic", meaning: "[형] 북극의; [명] 북극"),
-    WordPreviewModel(wordId: 5, word: "antarctic", meaning: "[형] 남극의; [명] 남극"),
-    WordPreviewModel(wordId: 6, word: "fulfill", meaning: "[동] 이행하다, 달성하다"),
-    WordPreviewModel(wordId: 7, word: "bullet", meaning: "[명] 탄알, 총알"),
-    WordPreviewModel(wordId: 8, word: "cereal", meaning: "[명] 곡물, 시리얼"),
-    WordPreviewModel(
-      wordId: 9,
-      word: "deadly",
-      meaning: "[형] 치명적인; [부] 몹시, 대단히",
-    ),
-    WordPreviewModel(
-      wordId: 10,
-      word: "harm",
-      meaning: "[명] 해, 손해; [동] 해를 끼치다",
-    ),
-    WordPreviewModel(wordId: 11, word: "fantasy", meaning: "[명] 공상, 환상"),
-    WordPreviewModel(
-      wordId: 12,
-      word: "emigrant",
-      meaning: "[명] (다른 나라로 가는) 이민, 이주자; [동] (타국으로) 이주하는",
-    ),
-    WordPreviewModel(wordId: 13, word: "leather", meaning: "[명] 가죽; [형] 가죽의"),
-    WordPreviewModel(wordId: 14, word: "dynasty", meaning: "[명] 왕조, 왕가"),
-    WordPreviewModel(wordId: 15, word: "column", meaning: "[명] (신문 등의) 난, 칼럼"),
-    WordPreviewModel(wordId: 16, word: "soul", meaning: "[명] 정신, 영혼"),
-    WordPreviewModel(wordId: 17, word: "pet", meaning: "[명] 애완동물"),
-    WordPreviewModel(wordId: 18, word: "bundle", meaning: "[명] 묶음, 다발"),
-    WordPreviewModel(wordId: 19, word: "competition", meaning: "[명] 경쟁, 시합"),
-    WordPreviewModel(wordId: 20, word: "competence", meaning: "[명] 능력, 능숙"),
-    WordPreviewModel(
-      wordId: 21,
-      word: "recommend",
-      meaning: "[동] 추천하다, ~을 권하다",
-    ),
-    WordPreviewModel(wordId: 22, word: "dew", meaning: "[명] 이슬"),
-    WordPreviewModel(
-      wordId: 23,
-      word: "annoy",
-      meaning: "[동] 짜증나게 하다, 성가시게 굴다",
-    ),
-    WordPreviewModel(wordId: 24, word: "possess", meaning: "[동] 소유하다, 지니다"),
-    WordPreviewModel(wordId: 25, word: "spot", meaning: "[동] 더럽히다, 발견하다"),
-    WordPreviewModel(
-      wordId: 26,
-      word: "bow",
-      meaning: "[명] 활, 경례; [동] 활처럼 휘다, (인사, 예배 등을 위해) 머리를 숙이다",
-    ),
-    WordPreviewModel(wordId: 27, word: "head", meaning: "[명] 머리; [동] 이끌다, 향하다"),
-    WordPreviewModel(wordId: 28, word: "precious", meaning: "[형] 귀중한, 값비싼"),
-    WordPreviewModel(
-      wordId: 29,
-      word: "fury",
-      meaning: "[명] 분노, 격분, (날씨, 속도 등이) 맹렬함, 격심함",
-    ),
-    WordPreviewModel(
-      wordId: 30,
-      word: "feed",
-      meaning: "[명] 먹이; [동] 먹이를 주다, 음식을 먹이다, 먹다",
-    ),
-    WordPreviewModel(wordId: 31, word: "punctual", meaning: "[형] 시간을 엄수하는"),
-    WordPreviewModel(wordId: 32, word: "myth", meaning: "[명] 신화, (근거 없는) 이야기"),
-    WordPreviewModel(wordId: 33, word: "peculiar", meaning: "[형] 기묘한, 독특한'"),
-    WordPreviewModel(wordId: 34, word: "queer", meaning: "[형] 기묘한, 괴상한"),
-    WordPreviewModel(wordId: 35, word: "naughty", meaning: "[형] 장난꾸러기의, 버릇없는"),
-    WordPreviewModel(
-      wordId: 36,
-      word: "avalanche",
-      meaning: "[명] 눈사태, 산사태; [명] 쇄도",
-    ),
-    WordPreviewModel(wordId: 37, word: "riddle", meaning: "[명] 수수께끼"),
-    WordPreviewModel(wordId: 38, word: "realm", meaning: "[명] 왕국, 범위, 영역"),
-    WordPreviewModel(wordId: 39, word: "pile", meaning: "[동] 쌓다; [명] 쌓아올린 더미"),
-    WordPreviewModel(wordId: 40, word: "paw", meaning: "[명] (동물의) 발"),
-    WordPreviewModel(wordId: 41, word: "mummy", meaning: "[명] 미라"),
-    WordPreviewModel(wordId: 42, word: "legacy", meaning: "[명] 유산"),
-    WordPreviewModel(wordId: 43, word: "hay", meaning: "[명] 건초; [동] 건초를 만들다"),
-    WordPreviewModel(
-      wordId: 44,
-      word: "oblige",
-      meaning: "[동] 어쩔 수 없이 ~하게 하다, 억지로 시키다",
-    ),
-    WordPreviewModel(wordId: 45, word: "contemplate", meaning: "[동] 심사숙고하다"),
-  ];
 
-  //단어장 단어 목록
   List<WordPreviewModel> wordsInWordBook = [];
   //랜덤 카드 목록
-  List<WordPreviewModel> randomWords = [
-    WordPreviewModel(
-      wordId: 1,
-      word: "endeavor",
-      meaning: "[명] 노력, 시도; [동] 노력하다, 시도하다",
-    ),
-    WordPreviewModel(
-      wordId: 2,
-      word: "section",
-      meaning: "[명] (여러 개로 나뉜 것의 한) 부분, 부문",
-    ),
-    WordPreviewModel(wordId: 3, word: "surgeon", meaning: "[명] 외과 의사"),
-    WordPreviewModel(wordId: 4, word: "arctic", meaning: "[형] 북극의; [명] 북극"),
-    WordPreviewModel(wordId: 5, word: "elephant", meaning: "[명] 코끼리"),
-    WordPreviewModel(wordId: 6, word: "flower", meaning: "[명] 꽃"),
-    WordPreviewModel(wordId: 7, word: "grape", meaning: "[명] 포도"),
-    WordPreviewModel(wordId: 8, word: "house", meaning: "[명] 집"),
-    WordPreviewModel(wordId: 9, word: "ice", meaning: "[명] 얼음"),
-    WordPreviewModel(wordId: 10, word: "juice", meaning: "[명] 주스"),
-  ];
+  List<WordPreviewModel> randomWords = [];
   //랜덤 카드 눌림 상태 저장 (카드 wordId 저장)
   List<int> pressedCardsWordId = [];
 
@@ -175,13 +60,52 @@ class _CreateRandomWordBookScreenState
   }
 
   //단어 랜덤 뽑기
-  void pickRandomWords({required int count}) {
-    final shuffledList = List<WordPreviewModel>.from(wordPreviewList)
-      ..shuffle(Random()); //중복 x
-    setState(() {
-      randomWords = shuffledList.take(count).toList(); //랜덤 카드 리스트 제공
-      pressedCardsWordId.clear(); //눌렸던 랜덤 카드 저장 리스트 초기화
-    });
+  void pickRandomWords({required int count}) async {
+    //api 호출
+    var result = await MywordbooksService.getRandomMyWord(randomCount: count);
+
+    if (mounted) {
+      if (result.isSuccess) {
+        setState(() {
+          randomWords = result.data;
+          pressedCardsWordId.clear(); //눌렸던 랜덤 카드 저장 리스트 초기화
+          //랜덤 카드 리스트 중 이미 단어장에 포함된 단어는 눌림 상태 처리
+          for (var word in randomWords) {
+            if (wordsInWordBook.contains(word)) {
+              pressedCardsWordId.add(word.wordId);
+            }
+          }
+        });
+      } else {
+        if (result.title == "오류 발생") {
+          //오류 발생
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else if (result.title == "Token 재발급") {
+          //토큰 재발급 및 재실행 과정
+        } else {
+          //일반 실패 응답
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
+    // final shuffledList = List<WordPreviewModel>.from(wordPreviewList)
+    //   ..shuffle(Random()); //중복 x
+    // setState(() {
+    //   randomWords = shuffledList.take(count).toList(); //랜덤 카드 리스트 제공
+    //   pressedCardsWordId.clear(); //눌렸던 랜덤 카드 저장 리스트 초기화
+    //   //랜덤 카드 리스트 중 이미 단어장에 포함된 단어는 눌림 상태 처리
+    //   for (var word in randomWords) {
+    //     if (wordsInWordBook.contains(word)) {
+    //       pressedCardsWordId.add(word.wordId);
+    //     }
+    //   }
+    // });
   }
 
   //단어장 전체 선택
@@ -224,7 +148,7 @@ class _CreateRandomWordBookScreenState
     });
   }
 
-  //단어장 단어 삭제
+  //랜덤 카드 선택 해제
   void removeWord({required int wordId}) {
     setState(() {
       wordsInWordBook.removeWhere((word) => word.wordId == wordId);
@@ -235,7 +159,7 @@ class _CreateRandomWordBookScreenState
     });
   }
 
-  //랜덤 카드가 눌렸을 때,
+  //랜덤 카드 선택
   void _toggleRandomWordCard({required WordPreviewModel word}) {
     setState(() {
       //랜덤 버튼 눌림 상태 갱신
@@ -585,9 +509,9 @@ class _CreateRandomWordBookScreenState
     _pickCount = 5; //초기의 뽑을 단어 개수
 
     final overlay = Overlay.of(context);
-    final renderBox = context.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
+    // final renderBox = context.findRenderObject() as RenderBox;
+    // final size = renderBox.size;
+    // final offset = renderBox.localToGlobal(Offset.zero);
 
     _pickerOverlay = OverlayEntry(
       builder:

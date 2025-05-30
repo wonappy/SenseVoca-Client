@@ -11,7 +11,7 @@ import '../models/word_book_info_model.dart';
 class MywordbooksService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://192.168.1.2:8080/api/mywordbooks";
+  static const String baseUrl = "http://10.101.164.81:8080/api/mywordbooks";
 
   //나만의 단어장 리스트 가져오기
   static Future<ApiResponseModel> getMyWordBookList() async {
@@ -133,7 +133,7 @@ class MywordbooksService {
         final dynamic data = result['data'];
         for (var wordPreview in data) {
           //응답list를 각 객체로 생성 후 list에 저장
-          wordPreviewList.add(WordPreviewModel.fromJson(wordPreview));
+          wordPreviewList.add(WordPreviewModel.fromMyWordJson(wordPreview));
         }
         if (kDebugMode) {
           print(wordPreviewList);
@@ -350,6 +350,94 @@ class MywordbooksService {
     } catch (e) {
       if (kDebugMode) {
         print('오류 발생: [getMyWordList] $e');
+      }
+      returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
+      return returnMsg;
+    }
+  }
+
+  //랜덤 단어 받아오기
+  static Future<ApiResponseModel> getRandomMyWord({
+    required int randomCount,
+  }) async {
+    final url = Uri.parse('$baseUrl/$randomCount/random-myword');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('getRandomMyWord 호출');
+    }
+
+    try {
+      final accessToken = await storage.read(key: "AccessToken");
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        //body json 값 가져오기
+        final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
+
+        if (kDebugMode) {
+          print('[getRandomMyWord] Success : ${result['message']}');
+        }
+
+        //랜덤 단어 저장
+        List<WordPreviewModel> randomWordPreviewList = [];
+
+        //data -> WordPreviewModel 추출
+        final dynamic data = result['data'];
+
+        for (var wordPreview in data) {
+          //응답list를 각 객체로 생성 후 list에 저장
+          randomWordPreviewList.add(
+            WordPreviewModel.fromRandomWordJson(wordPreview),
+          );
+        }
+        if (kDebugMode) {
+          print(randomWordPreviewList);
+        }
+
+        returnMsg = ApiResponseModel(
+          isSuccess: true,
+          title: "랜덤 단어 목록 반환 성공",
+          msg: "${result['message']}",
+          data: randomWordPreviewList,
+        );
+      } else if (response.statusCode == 403) {
+        if (kDebugMode) {
+          print('[getRandomMyWord] - AccessToken 만료. 토큰 재발급 필요.');
+        }
+
+        //403으로 실패했을 경우 -> a토큰 값 만료
+        // -> 재발급 받은 다음
+        // -> 해당 api 호출 다시 시도
+
+        returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "Token 재발급",
+          msg: "AccessToken 만료. 토큰 재발급 필요.",
+        );
+      } else {
+        //body json 값 가져오기
+        final dynamic result = jsonDecode(response.body);
+        if (kDebugMode) {
+          print('${result['message']}');
+        }
+
+        returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "랜덤 단어 목록 반환 실패",
+          msg: "[getMyWordList] fail - ${result['message']}",
+        );
+      }
+      return returnMsg;
+    } catch (e) {
+      if (kDebugMode) {
+        print('[getMyWordList] error : $e');
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return returnMsg;

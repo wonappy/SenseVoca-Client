@@ -9,9 +9,15 @@ class WordPreviewModel {
     required this.meaning,
   });
 
-  //api용
-  WordPreviewModel.fromJson(Map<String, dynamic> json)
+  //나만의 단어장 api용
+  WordPreviewModel.fromMyWordJson(Map<String, dynamic> json)
     : wordId = json['myWordId'],
+      word = json['word'],
+      meaning = json['meaning'];
+
+  //랜덤 단어장 api용
+  WordPreviewModel.fromRandomWordJson(Map<String, dynamic> json)
+    : wordId = json['wordId'],
       word = json['word'],
       meaning = json['meaning'];
 
@@ -24,4 +30,15 @@ class WordPreviewModel {
 
     return result;
   }
+
+  //contains 비교를 위한 ==, hashCode 재정의
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is WordPreviewModel && other.wordId == wordId;
+  }
+
+  @override
+  int get hashCode => wordId.hashCode;
 }
