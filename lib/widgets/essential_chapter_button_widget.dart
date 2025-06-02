@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 
+import '../enums/app_enums.dart';
 import '../screens/main_wordbook_screen.dart';
 
 class EssentialChapterButton extends StatefulWidget {
@@ -50,6 +51,7 @@ class _EssentialChapterButtonState extends State<EssentialChapterButton> {
             MaterialPageRoute(
               builder:
                   (context) => MainWordBookScreen(
+                    type: WordBook.basic,
                     wordbookId: widget.chapterId,
                     setName: widget.title,
                     wordCount: widget.wordCount,
