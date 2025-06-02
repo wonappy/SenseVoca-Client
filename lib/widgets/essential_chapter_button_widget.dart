@@ -5,6 +5,7 @@ import '../enums/app_enums.dart';
 import '../screens/main_wordbook_screen.dart';
 
 class EssentialChapterButton extends StatefulWidget {
+  final int wordBookId;
   final int chapterId;
   final String title;
   final int wordCount;
@@ -13,6 +14,7 @@ class EssentialChapterButton extends StatefulWidget {
 
   const EssentialChapterButton({
     super.key,
+    required this.wordBookId,
     required this.chapterId,
     required this.title,
     required this.wordCount,

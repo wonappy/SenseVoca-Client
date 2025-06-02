@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sense_voka/services/basic_service.dart';
 import 'package:sense_voka/widgets/end_card_widget.dart';
 import '../enums/app_enums.dart';
 import '../models/word_info_model.dart';
+import '../services/favoritewords_service.dart';
 import '../services/mywordbooks_service.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../styles/white_to_orange_button_style.dart';
@@ -517,13 +519,28 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     super.initState();
 
     // 선택된 단어의 인덱스로 검색해서 구간 내 단어 정보 리스트 생성
-    _getWordInfoList(wordList: widget.wordList, country: accent);
+    _getWordInfoList(
+      type: widget.type,
+      wordList: widget.wordList,
+      country: accent,
+    );
     // wordInfoList =
     //     dbWord.where((word) => widget.wordList.contains(word.wordId)).toList();
     //구간 내 단어 개수
     wordCount = widget.wordList.length;
 
     _setupAnimation(); //카드 애니메이션 초기 상태 설정
+  }
+
+  //즐겨찾기 버튼이 눌렸을 때 콜백 함수
+  void _toggleFavoriteBButton({required WordInfoModel word}) {
+    if (word.favorite == false) {
+      //즐겨찾기 등록
+      _postToFavorites(word: word);
+    } else if (word.favorite == true) {
+      //즐겨찾기 해제
+      _removeFromFavorites(word: word);
+    }
   }
 
   //한 번 더 복습 버튼이 눌렸을 때 콜백 함수
@@ -666,8 +683,13 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                   onNextSectionPressed: () => _nextSection(),
                                 )
                                 : WordCard(
+                                  type: widget.type,
                                   word: wordInfoList[currentIndex],
                                   accent: accent,
+                                  onFavoriteButtonPressed:
+                                      () => _toggleFavoriteBButton(
+                                        word: wordInfoList[currentIndex],
+                                      ),
                                   isRetryButtonPressed: retryWordList.contains(
                                     wordInfoList[currentIndex].wordId,
                                   ),
@@ -692,8 +714,13 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                 : isSectionCompleteAnimating
                                 ? WordCard(
                                   //다음 카드가 구간완료 -> 마지막인덱스카드일 때,
+                                  type: widget.type,
                                   word: wordInfoList[currentIndex],
                                   accent: accent,
+                                  onFavoriteButtonPressed:
+                                      () => _toggleFavoriteBButton(
+                                        word: wordInfoList[currentIndex],
+                                      ),
                                   isRetryButtonPressed: retryWordList.contains(
                                     wordInfoList[currentIndex].wordId,
                                   ),
@@ -702,8 +729,13 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                 )
                                 : WordCard(
                                   //일반 다음 카드
+                                  type: widget.type,
                                   word: wordInfoList[nextIndex],
                                   accent: accent,
+                                  onFavoriteButtonPressed:
+                                      () => _toggleFavoriteBButton(
+                                        word: wordInfoList[currentIndex],
+                                      ),
                                   isRetryButtonPressed: retryWordList.contains(
                                     wordInfoList[nextIndex].wordId,
                                   ),
@@ -735,8 +767,14 @@ class _WordStudyScreenState extends State<WordStudyScreen>
                                               onNextSectionPressed: null,
                                             )
                                             : WordCard(
+                                              type: widget.type,
                                               word: wordInfoList[currentIndex],
-                                              accent: "us",
+                                              accent: accent,
+                                              onFavoriteButtonPressed:
+                                                  () => _toggleFavoriteBButton(
+                                                    word:
+                                                        wordInfoList[currentIndex],
+                                                  ),
                                               isRetryButtonPressed:
                                                   retryWordList.contains(
                                                     wordInfoList[currentIndex]
@@ -882,6 +920,7 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
   //단어 상세 정보 반환 api
   void _getWordInfoList({
+    required WordBook type,
     required List<int> wordList,
     required String country,
   }) async {
@@ -891,41 +930,145 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     });
 
     //api 호출
-    var result = await MywordbooksService.postMyWordsInfo(
-      wordIdList: wordList,
-      country: country,
-    );
+    dynamic result;
 
-    if (mounted) {
-      if (result.isSuccess) {
-        try {
-          //미리 이미지 가져오기
-          await _precacheImages(result.data);
-        } catch (e) {
-          if (kDebugMode) {
-            print("일부 이미지 로딩에 실패하였습니다. - $e");
+    if (type == WordBook.basic) {
+      result = await BasicService.postBasicWordsInfo(
+        wordIdList: wordList,
+        country: country,
+      );
+    } else if (type == WordBook.my) {
+      result = await MywordbooksService.postMyWordsInfo(
+        wordIdList: wordList,
+        country: country,
+      );
+
+      if (mounted) {
+        if (result.isSuccess) {
+          try {
+            //미리 이미지 가져오기
+            await _precacheImages(result.data);
+          } catch (e) {
+            if (kDebugMode) {
+              print("일부 이미지 로딩에 실패하였습니다. - $e");
+            }
+          }
+          //데이터 갱신 & 로딩 종료
+          setState(() {
+            wordInfoList = result.data;
+            isLoading = false;
+          });
+        } else {
+          if (result.title == "오류 발생") {
+            //오류 발생
+            ScaffoldMessenger.of(context).showSnackBar(
+              errorSnackBarStyle(context: context, result: result),
+            );
+          } else if (result.title == "Token 재발급") {
+            //토큰 재발급 및 재실행 과정
+          } else {
+            //일반 실패 응답
+            await showDialogWidget(
+              context: context,
+              title: result.title,
+              msg: result.msg,
+            );
           }
         }
-        //데이터 갱신 & 로딩 종료
-        setState(() {
-          wordInfoList = result.data;
-          isLoading = false;
-        });
-      } else {
-        if (result.title == "오류 발생") {
-          //오류 발생
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
-        } else if (result.title == "Token 재발급") {
-          //토큰 재발급 및 재실행 과정
+      }
+    }
+  }
+
+  //즐겨찾기 등록 api
+  void _postToFavorites({required WordInfoModel word}) async {
+    //api 결과 변수
+    dynamic result;
+
+    //api 호출
+    if (widget.type == WordBook.my) {
+      //나만의 단어장
+      result = await FavoriteWordsService.postMyWordtoFavorite(
+        myWordMMnemonicId: word.wordId,
+      );
+    } else {
+      //기본 단어장
+      result = await FavoriteWordsService.postBasicWordtoFavorite(
+        basicWordId: word.wordId,
+      );
+    }
+
+    if (result != null) {
+      if (mounted) {
+        if (result.isSuccess) {
+          setState(() {
+            //즐겨찾기 상태 변경
+            word.favorite = true;
+          });
         } else {
-          //일반 실패 응답
-          await showDialogWidget(
-            context: context,
-            title: result.title,
-            msg: result.msg,
-          );
+          if (result.title == "오류 발생") {
+            //오류 발생
+            ScaffoldMessenger.of(context).showSnackBar(
+              errorSnackBarStyle(context: context, result: result),
+            );
+          } else if (result.title == "Token 재발급") {
+            //토큰 재발급 및 재실행 과정
+          } else {
+            //일반 실패 응답
+            await showDialogWidget(
+              context: context,
+              title: result.title,
+              msg: result.msg,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  //즐겨찾기 해제
+  void _removeFromFavorites({required WordInfoModel word}) async {
+    if (!wordInfoList.contains(word)) return;
+    if (word.favorite != true) return;
+
+    //api 결과 변수
+    dynamic result;
+
+    //api 호출
+    if (widget.type == WordBook.my) {
+      //나만의 단어장
+      result = await FavoriteWordsService.deleteMyWordfromFavorite(
+        myWordMMnemonicId: word.wordId,
+      );
+    } else {
+      //기본 단어장
+      result = await FavoriteWordsService.postBasicWordtoFavorite(
+        basicWordId: word.wordId,
+      );
+    }
+
+    if (result != null) {
+      if (mounted) {
+        if (result.isSuccess) {
+          setState(() {
+            //즐겨찾기 상태 변경
+            word.favorite = false;
+          });
+        } else {
+          if (result.title == "오류 발생") {
+            //오류 발생
+            ScaffoldMessenger.of(context).showSnackBar(
+              errorSnackBarStyle(context: context, result: result),
+            );
+          } else if (result.title == "Token 재발급") {
+            //토큰 재발급 및 재실행 과정
+          } else {
+            //일반 실패 응답
+            await showDialogWidget(
+              context: context,
+              title: result.title,
+              msg: result.msg,
+            );
+          }
         }
       }
     }
@@ -936,12 +1079,6 @@ class _WordStudyScreenState extends State<WordStudyScreen>
     final cacheManager = DefaultCacheManager();
 
     for (var word in wordList) {
-      // try {
-      //   final image = NetworkImage(
-      //     "https://drive.google.com/uc?export=view&id=${word.mnemonicImageUrl}",
-      //   );
-      //   await precacheImage(image, context);
-      // }
       if (isDisposed) break; //화면 나가면 다운로드 중지
       try {
         await cacheManager.getSingleFile(

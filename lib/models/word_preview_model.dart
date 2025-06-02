@@ -15,6 +15,12 @@ class WordPreviewModel {
       word = json['word'],
       meaning = json['meaning'];
 
+  //기본 단어장 api용
+  WordPreviewModel.fromBasicWordJson(Map<String, dynamic> json)
+    : wordId = json['daywordId'],
+      word = json['word'],
+      meaning = json['meaning'];
+
   //랜덤 단어장 api용
   WordPreviewModel.fromRandomWordJson(Map<String, dynamic> json)
     : wordId = json['wordId'],

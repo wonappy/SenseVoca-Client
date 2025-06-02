@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:sense_voka/services/basic_service.dart';
 import 'package:sense_voka/widgets/essential_wordbook_button_widget.dart';
 
 import '../models/essential_set_info_model.dart';
+import '../styles/error_snack_bar_style.dart';
+import '../widgets/show_dialog_widget.dart';
 
 class EssentialWordBookScreen extends StatefulWidget {
   const EssentialWordBookScreen({super.key});
@@ -14,24 +17,25 @@ class EssentialWordBookScreen extends StatefulWidget {
 
 class _EssentialWordBookScreenState extends State<EssentialWordBookScreen> {
   //단어장 정렬 방법
-  final List<String> _sortAlgorithm = ["기본 제공 순", "최근 접근 순"];
+  final List<String> _sortAlgorithm = ["기본 제공 순"];
   String? _selectedSort = "";
 
+  //api 호출 상태 -> t: 로딩 중, f: 호출 완료
+  bool isLoading = true;
+
   //샘플 데이터
-  List<EssentialSetInfoModel> wordBooks = [
+  late List<EssentialSetInfoModel> wordBooks = [
     EssentialSetInfoModel(
       wordSetId: 1,
       title: "경선식 영단어 (토익)",
       chapterCount: 30,
       provider: "경선식",
-      lastAccess: DateTime(2025, 5, 6, 11, 23),
     ),
     EssentialSetInfoModel(
       wordSetId: 2,
       title: "경선식 영단어 (수능)",
       chapterCount: 49,
       provider: "경선식",
-      lastAccess: DateTime(2025, 5, 4, 11, 23),
     ),
   ];
 
@@ -41,6 +45,8 @@ class _EssentialWordBookScreenState extends State<EssentialWordBookScreen> {
     super.initState();
     setState(() {
       _selectedSort = _sortAlgorithm[0];
+      //기본 단어장 목록 호출 api
+      _getBasicWordSet();
     });
   }
 
@@ -102,11 +108,7 @@ class _EssentialWordBookScreenState extends State<EssentialWordBookScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedSort = value!;
-                          if (_selectedSort == "최근 접근 순") {
-                            wordBooks.sort(
-                              (a, b) => b.lastAccess.compareTo(a.lastAccess),
-                            );
-                          } else if (_selectedSort == "기본 제공 순") {
+                          if (_selectedSort == "기본 제공 순") {
                             wordBooks.sort(
                               (a, b) => b.wordSetId.compareTo(a.wordSetId),
                             );
@@ -123,12 +125,10 @@ class _EssentialWordBookScreenState extends State<EssentialWordBookScreen> {
                 Column(
                   children: [
                     EssentialWordBookButton(
+                      setId: wordBooks[i].wordSetId,
                       setName: wordBooks[i].title,
                       chapterCount: wordBooks[i].chapterCount,
                       provider: wordBooks[i].provider,
-                      lastAccess: DateFormat(
-                        "yyyy.MM.dd",
-                      ).format(wordBooks[i].lastAccess),
                     ),
                     SizedBox(height: 10),
                   ],
@@ -138,5 +138,41 @@ class _EssentialWordBookScreenState extends State<EssentialWordBookScreen> {
         ),
       ),
     );
+  }
+
+  //기본 단어장 리스트 호출 api
+  void _getBasicWordSet() async {
+    //로딩 창 출력
+    setState(() {
+      isLoading = true;
+    });
+
+    //api 호출
+    var result = await BasicService.getBasicWordBookList();
+
+    if (mounted) {
+      if (result.isSuccess) {
+        setState(() {
+          wordBooks = result.data;
+          isLoading = false;
+        });
+      } else {
+        if (result.title == "오류 발생") {
+          //오류 발생
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else if (result.title == "Token 재발급") {
+          //토큰 재발급 및 재실행 과정
+        } else {
+          //일반 실패 응답
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
   }
 }

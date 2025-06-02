@@ -1,8 +1,7 @@
-import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
-
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
 import 'package:sense_voka/screens/word_study_screen.dart';
+import 'package:sense_voka/services/basic_service.dart';
 import 'package:sense_voka/widgets/word_section_widget.dart';
 
 import '../enums/app_enums.dart';
@@ -46,7 +45,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     super.initState();
     setState(() {
       //단어 미리보기 정보 가져오기
-      _getMyWordList(wordbookId: widget.wordbookId);
+      _getMyWordList(type: widget.type, wordbookId: widget.wordbookId);
       //정렬 초기화
       _selectedSort = _sortAlgorithm[0];
     });
@@ -178,6 +177,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     required int wordCount,
   }) async {
     await _createNewStudyScreen(
+      type: widget.type,
       wordList: wordList.map((e) => e.wordId).toList(),
       sectionIndex: sectionIndex,
     );
@@ -198,6 +198,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
         final nextWords = wordPreviewList.sublist(start, end);
 
         await _createNewStudyScreen(
+          type: widget.type,
           wordList: nextWords.map((e) => e.wordId).toList(),
           sectionIndex: nextIndex,
         );
@@ -217,6 +218,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       final retryWordList = rawList.cast<int>(); //int로 형 변환
 
       await _createNewStudyScreen(
+        type: widget.type,
         wordList: retryWordList,
         sectionIndex: sectionInfo['currentIndex'],
       );
@@ -225,6 +227,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
 
   //단어 학습 화면 생성
   Future<void> _createNewStudyScreen({
+    required WordBook type,
     required List<int> wordList,
     required int sectionIndex,
   }) async {
@@ -233,7 +236,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       MaterialPageRoute(
         builder:
             (context) => WordStudyScreen(
-              type: widget.type,
+              type: type,
               wordList: wordList, //단어 Id리스트
               sectionIndex: sectionIndex, //구간 인덱스
             ),
@@ -248,14 +251,20 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
   }
 
   //나만의 단어장 단어 목록 반환 api
-  void _getMyWordList({required int wordbookId}) async {
+  void _getMyWordList({required WordBook type, required int wordbookId}) async {
     //로딩 창 출력
     setState(() {
       isLoading = true;
     });
 
     //api 호출
-    var result = await MywordbooksService.getMyWordList(wordbookId: wordbookId);
+    dynamic result;
+
+    if (type == WordBook.basic) {
+      result = await BasicService.getBasicWordList(chapterId: wordbookId);
+    } else if (type == WordBook.my) {
+      result = await MywordbooksService.getMyWordList(wordbookId: wordbookId);
+    }
 
     if (mounted) {
       if (result.isSuccess) {
