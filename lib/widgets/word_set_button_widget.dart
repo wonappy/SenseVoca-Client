@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/main_wordbook_screen.dart';
 
+import '../enums/app_enums.dart';
+
 class WordSetButton extends StatelessWidget {
   final int wordbookId;
   final String setName;
@@ -28,6 +30,7 @@ class WordSetButton extends StatelessWidget {
           MaterialPageRoute(
             builder:
                 (context) => MainWordBookScreen(
+                  type: WordBook.my,
                   wordbookId: wordbookId,
                   setName: setName,
                   wordCount: wordCount,

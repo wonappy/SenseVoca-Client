@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/widgets/end_card_widget.dart';
+import '../enums/app_enums.dart';
 import '../models/word_info_model.dart';
 import '../services/mywordbooks_service.dart';
 import '../styles/error_snack_bar_style.dart';
@@ -9,15 +10,14 @@ import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_card_widget.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 
-//단어 발음 국가 설정 (임시 데이터) -> 다른 곳으로 옮길 것
-enum Country { us, uk, aus }
-
 class WordStudyScreen extends StatefulWidget {
+  final WordBook type;
   final List<int> wordList;
   final int sectionIndex;
 
   const WordStudyScreen({
     super.key,
+    required this.type,
     required this.wordList,
     required this.sectionIndex,
   });

@@ -11,7 +11,7 @@ import '../models/word_book_info_model.dart';
 class MywordbooksService {
   // Create storage
   static final storage = FlutterSecureStorage();
-  static const String baseUrl = "http://10.101.164.81:8080/api/mywordbooks";
+  static const String baseUrl = "http://10.101.225.226:8080/api/mywordbooks";
 
   //나만의 단어장 리스트 가져오기
   static Future<ApiResponseModel> getMyWordBookList() async {

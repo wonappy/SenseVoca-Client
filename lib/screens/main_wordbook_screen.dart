@@ -1,20 +1,25 @@
+import 'dart:nativewrappers/_internal/vm/lib/internal_patch.dart';
+
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
 import 'package:sense_voka/screens/word_study_screen.dart';
 import 'package:sense_voka/widgets/word_section_widget.dart';
 
+import '../enums/app_enums.dart';
 import '../models/word_preview_model.dart';
 import '../services/mywordbooks_service.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 
 class MainWordBookScreen extends StatefulWidget {
-  final int wordbookId; //나중에 required로 바꿔ㅏ
+  final WordBook type;
+  final int wordbookId;
   final String setName;
   final int wordCount;
 
   const MainWordBookScreen({
     super.key,
+    required this.type,
     required this.wordbookId,
     required this.setName,
     required this.wordCount,
@@ -41,7 +46,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     super.initState();
     setState(() {
       //단어 미리보기 정보 가져오기
-      _getMyWordList(wordbookId: widget.wordbookId!);
+      _getMyWordList(wordbookId: widget.wordbookId);
       //정렬 초기화
       _selectedSort = _sortAlgorithm[0];
     });
@@ -228,6 +233,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       MaterialPageRoute(
         builder:
             (context) => WordStudyScreen(
+              type: widget.type,
               wordList: wordList, //단어 Id리스트
               sectionIndex: sectionIndex, //구간 인덱스
             ),
