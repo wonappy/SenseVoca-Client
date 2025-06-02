@@ -3,17 +3,17 @@ import 'package:marquee/marquee.dart';
 import 'package:sense_voka/screens/essential_chapters_screen.dart';
 
 class EssentialWordBookButton extends StatefulWidget {
+  final int setId;
   final String setName;
   final int chapterCount;
   final String provider;
-  final String lastAccess;
 
   const EssentialWordBookButton({
     super.key,
+    required this.setId,
     required this.setName,
     required this.chapterCount,
     required this.provider,
-    required this.lastAccess,
   });
 
   @override
@@ -48,6 +48,7 @@ class _EssentialWordBookButtonState extends State<EssentialWordBookButton> {
             MaterialPageRoute(
               builder:
                   (context) => EssentialChaptersScreen(
+                    wordBookId: widget.setId,
                     title: widget.setName,
                     chapterCount: widget.chapterCount,
                   ),

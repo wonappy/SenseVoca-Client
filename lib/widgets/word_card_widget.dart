@@ -6,18 +6,23 @@ import 'package:sense_voka/models/word_info_model.dart';
 import 'package:sense_voka/styles/example_sentence_style.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
+import '../enums/app_enums.dart';
 import 'callback_button_widget.dart';
 
 class WordCard extends StatefulWidget {
+  final WordBook type; //단어장 타입
   final WordInfoModel word; //단어 기본 정보
   final String accent; // "us", "uk", "aus" 3가지 발음 옵션
+  final VoidCallback onFavoriteButtonPressed; //즐겨찾기 버튼 눌림 콜백 함수
   final bool isRetryButtonPressed; //버튼 눌림 여부
   final VoidCallback onRetryButtonPressed; //한 번 더 복습 버튼 눌림 콜백 함수
 
   const WordCard({
     super.key,
+    required this.type,
     required this.word,
     required this.accent,
+    required this.onFavoriteButtonPressed,
     required this.onRetryButtonPressed,
     required this.isRetryButtonPressed,
   });
@@ -28,20 +33,6 @@ class WordCard extends StatefulWidget {
 
 class _WordCardState extends State<WordCard> {
   final FlutterTts tts = FlutterTts(); //tts 호출
-
-  //api 호출 상태 -> t: 로딩 중, f: 호출 완료
-  bool isLoading = true;
-
-  //디바이스 tts 종류 출력
-  void printAvailableVoices() async {
-    //FlutterTts tts = FlutterTts();
-
-    //List<dynamic> voices = await tts.getVoices;
-
-    // for (var voice in voices) {
-    //   print("목록 : $voice");
-    // }
-  }
 
   //tts 설정
   Future _speak(String text) async {
@@ -68,6 +59,115 @@ class _WordCardState extends State<WordCard> {
 
     await tts.speak(", $text"); //, 를 통해 첫 음절 무시 현상 제거
   }
+
+  //api 호출 상태 -> t: 로딩 중, f: 호출 완료
+  bool isLoading = true;
+
+  //즐겨찾기 상태 저장
+  late bool favorite;
+
+  @override
+  void initState() {
+    super.initState();
+    //즐겨찾기 상태 초기화
+    favorite = widget.word.favorite;
+  }
+
+  // //즐겨찾기 등록
+  // void _postToFavorites() async {
+  //   if (favorite != false) return;
+  //
+  //   //api 결과 변수
+  //   dynamic result;
+  //
+  //   //api 호출
+  //   if (widget.type == WordBook.my) {
+  //     //나만의 단어장
+  //     result = await FavoriteWordsService.postMyWordtoFavorite(
+  //       myWordMMnemonicId: widget.word.wordId,
+  //     );
+  //   } else {
+  //     //기본 단어장
+  //     // result = await FavoriteWordsService.postMyWordtoFavorite(
+  //     //   myWordMMnemonicId: widget.word.wordId,
+  //     // );
+  //   }
+  //
+  //   if (result != null) {
+  //     if (mounted) {
+  //       if (result.isSuccess) {
+  //         setState(() {
+  //           //즐겨찾기 상태 변경
+  //           favorite = true;
+  //         });
+  //       } else {
+  //         if (result.title == "오류 발생") {
+  //           //오류 발생
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             errorSnackBarStyle(context: context, result: result),
+  //           );
+  //         } else if (result.title == "Token 재발급") {
+  //           //토큰 재발급 및 재실행 과정
+  //         } else {
+  //           //일반 실패 응답
+  //           await showDialogWidget(
+  //             context: context,
+  //             title: result.title,
+  //             msg: result.msg,
+  //           );
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
+  //
+  // //즐겨찾기 해제
+  // void removeFromFavorites() async {
+  //   if (favorite != true) return;
+  //
+  //   //api 결과 변수
+  //   dynamic result;
+  //
+  //   //api 호출
+  //   if (widget.type == WordBook.my) {
+  //     //나만의 단어장
+  //     result = await FavoriteWordsService.deleteMyWordfromFavorite(
+  //       myWordMMnemonicId: widget.word.wordId,
+  //     );
+  //   } else {
+  //     //기본 단어장
+  //     // result = await FavoriteWordsService.postMyWordtoFavorite(
+  //     //   myWordMMnemonicId: widget.word.wordId,
+  //     // );
+  //   }
+  //
+  //   if (result != null) {
+  //     if (mounted) {
+  //       if (result.isSuccess) {
+  //         setState(() {
+  //           //즐겨찾기 상태 변경
+  //           favorite = false;
+  //         });
+  //       } else {
+  //         if (result.title == "오류 발생") {
+  //           //오류 발생
+  //           ScaffoldMessenger.of(context).showSnackBar(
+  //             errorSnackBarStyle(context: context, result: result),
+  //           );
+  //         } else if (result.title == "Token 재발급") {
+  //           //토큰 재발급 및 재실행 과정
+  //         } else {
+  //           //일반 실패 응답
+  //           await showDialogWidget(
+  //             context: context,
+  //             title: result.title,
+  //             msg: result.msg,
+  //           );
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
   @override
   void dispose() {
@@ -101,10 +201,13 @@ class _WordCardState extends State<WordCard> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                //즐겨찾기
                 IconButton(
-                  onPressed: () => printAvailableVoices(),
+                  onPressed: widget.onFavoriteButtonPressed,
                   icon: Icon(
-                    Icons.star_border_rounded,
+                    widget.word.favorite
+                        ? Icons.star_rounded
+                        : Icons.star_border_rounded,
                     size: 40,
                     color: Colors.black,
                   ),
@@ -152,25 +255,9 @@ class _WordCardState extends State<WordCard> {
                   width: 180,
                   height: 180,
                   fit: BoxFit.cover,
-                  // placeholder:
-                  //     (context, url) =>
-                  //         CircularProgressIndicator(color: Color(0xFFFF983D)),
                   errorWidget:
                       (context, url, error) => Icon(Icons.image_not_supported),
                 ),
-                //온리 캐싱 데이터 -> 앱 종료 후 삭제 -> 다시 켰을 때는 또 다시 다운로드 받아와야 함.
-                // Container(
-                //   width: 180,
-                //   height: 180,
-                //   decoration: BoxDecoration(
-                //     image: DecorationImage(
-                //       fit: BoxFit.cover,
-                //       image: NetworkImage(
-                //         'https://drive.google.com/uc?export=view&id=${widget.word.mnemonicImageUrl}',
-                //       ),
-                //     ),
-                //   ),
-                // ),
                 SizedBox(height: 5),
                 RichText(
                   text: TextSpan(

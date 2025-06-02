@@ -7,7 +7,7 @@ class WordInfoModel {
   final String mnemonicImageUrl; //연상 예문 이미지
   final String exampleSentenceEn; //영어 예문
   final String exampleSentenceKo; //영어 예문 한글 번역
-  final bool favorite; //즐겨찾기 여부
+  bool favorite; //즐겨찾기 여부
 
   WordInfoModel({
     required this.wordId,

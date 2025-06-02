@@ -193,7 +193,7 @@ class _MainScreenState extends State<MainScreen> {
               Container(
                 padding: EdgeInsets.all(13),
                 width: 370,
-                height: 310,
+                height: 280,
                 decoration: BoxDecoration(
                   color: Color(0xFFFFE4CA),
                   borderRadius: BorderRadius.circular(30),
@@ -260,39 +260,11 @@ class _MainScreenState extends State<MainScreen> {
                                 ),
                               ],
                             ),
-                            Text(
-                              '퀴즈 랭킹',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                Text(
-                                  '3512',
-                                  style: TextStyle(
-                                    fontSize: 50,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFFF983D),
-                                  ),
-                                ),
-                                SizedBox(width: 10),
-                                Text(
-                                  '위',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
                           ],
                         ),
                       ],
                     ),
+                    SizedBox(height: 25),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
@@ -336,13 +308,6 @@ class _MainScreenState extends State<MainScreen> {
               SizedBox(height: 10),
               NavigationButtonWidget(
                 text: "즐겨찾기 단어장",
-                bHeight: 90,
-                bWidth: 360,
-                destinationScreen: MyWordBookScreen(),
-              ),
-              SizedBox(height: 10),
-              NavigationButtonWidget(
-                text: "단어 퀴즈",
                 bHeight: 90,
                 bWidth: 360,
                 destinationScreen: MyWordBookScreen(),
