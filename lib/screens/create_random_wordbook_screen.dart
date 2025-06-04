@@ -70,7 +70,7 @@ class _CreateRandomWordBookScreenState
           //랜덤 카드 리스트 중 이미 단어장에 포함된 단어는 눌림 상태 처리
           for (var word in randomWords) {
             if (wordsInWordBook.contains(word)) {
-              pressedCardsWordId.add(word.wordId);
+              pressedCardsWordId.add(word.wordId!);
             }
           }
         });
@@ -111,7 +111,7 @@ class _CreateRandomWordBookScreenState
     setState(() {
       for (var word in randomWords) {
         if (!pressedCardsWordId.contains(word.wordId)) {
-          pressedCardsWordId.add(word.wordId);
+          pressedCardsWordId.add(word.wordId!);
         }
         if (!wordsInWordBook.contains(word)) {
           wordsInWordBook.add(word);
@@ -168,7 +168,7 @@ class _CreateRandomWordBookScreenState
           wordsInWordBook.remove(word);
         }
       } else {
-        pressedCardsWordId.add(word.wordId);
+        pressedCardsWordId.add(word.wordId!);
         //단어장 목록에 추가
         if (!wordsInWordBook.contains(word)) {
           wordsInWordBook.add(word);
@@ -226,22 +226,12 @@ class _CreateRandomWordBookScreenState
                   return;
                 }
 
-                List<Map<String, String>> wordMeaningList =
-                    wordsInWordBook
-                        .map(
-                          (word) => {
-                            "word": word.word,
-                            "meaning": word.meaning,
-                          },
-                        )
-                        .toList();
-
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder:
                         (context) =>
-                            CreateMywordbookScreen(wordsInfo: wordMeaningList),
+                            CreateMywordbookScreen(wordsInfo: wordsInWordBook),
                   ),
                 );
               },
@@ -353,7 +343,7 @@ class _CreateRandomWordBookScreenState
                                                 padding: EdgeInsets.zero,
                                                 onPressed:
                                                     () => removeWord(
-                                                      wordId: word.wordId,
+                                                      wordId: word.wordId!,
                                                     ),
                                                 icon: Icon(
                                                   Icons.remove_circle,

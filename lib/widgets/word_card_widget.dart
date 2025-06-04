@@ -204,13 +204,18 @@ class _WordCardState extends State<WordCard> {
                 //즐겨찾기
                 IconButton(
                   onPressed: widget.onFavoriteButtonPressed,
-                  icon: Icon(
-                    widget.word.favorite
-                        ? Icons.star_rounded
-                        : Icons.star_border_rounded,
-                    size: 40,
-                    color: Colors.black,
-                  ),
+                  icon:
+                      widget.word.favorite
+                          ? Icon(
+                            Icons.star_rounded,
+                            size: 40,
+                            color: Colors.orangeAccent,
+                          )
+                          : Icon(
+                            Icons.star_border_rounded,
+                            size: 40,
+                            color: Colors.black,
+                          ),
                 ),
                 Column(
                   children: [

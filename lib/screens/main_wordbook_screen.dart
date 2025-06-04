@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/mywordbook_screen.dart';
 import 'package:sense_voka/screens/word_study_screen.dart';
 import 'package:sense_voka/services/basic_service.dart';
+import 'package:sense_voka/services/favoritewords_service.dart';
 import 'package:sense_voka/widgets/word_section_widget.dart';
 
 import '../enums/app_enums.dart';
+import '../models/request_models/word_id_type_model.dart';
 import '../models/word_preview_model.dart';
 import '../services/mywordbooks_service.dart';
 import '../styles/error_snack_bar_style.dart';
@@ -14,14 +16,12 @@ class MainWordBookScreen extends StatefulWidget {
   final WordBook type;
   final int wordbookId;
   final String setName;
-  final int wordCount;
 
   const MainWordBookScreen({
     super.key,
     required this.type,
     required this.wordbookId,
     required this.setName,
-    required this.wordCount,
   });
 
   @override
@@ -98,7 +98,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "총 ${widget.wordCount}개",
+                            "총 ${wordPreviewList.length}개",
                             style: TextStyle(fontSize: 19),
                           ),
                           Container(
@@ -131,12 +131,15 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
                       // 구간 목록
                       //generate : 길이가 n인 리스트 자동 생성 -> 구간 개수만큼 리스트에 위젯 저장
                       //ceil : 반올림 함수 => 단어를 10개씩 나누어 구간 생성
-                      ...List.generate((widget.wordCount / 10).ceil(), (i) {
+                      ...List.generate((wordPreviewList.length / 10).ceil(), (
+                        i,
+                      ) {
                         int startIndex = i * 10; //구간 시작 단어 인덱스
                         int endIndex = (i + 1) * 10; //구간 끝 단어 인덱스
-                        if (endIndex > widget.wordCount) {
+                        if (endIndex > wordPreviewList.length) {
                           endIndex =
-                              widget.wordCount; //전체 단어 길이를 초과했을 때, 길이만큼으로 다시 제한
+                              wordPreviewList
+                                  .length; //전체 단어 길이를 초과했을 때, 길이만큼으로 다시 제한
                         }
 
                         //구간 내 단어 리스트 생성
@@ -178,7 +181,10 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
   }) async {
     await _createNewStudyScreen(
       type: widget.type,
-      wordList: wordList.map((e) => e.wordId).toList(),
+      wordList:
+          wordList
+              .map((e) => WordIdTypeModel(wordId: e.wordId!, type: e.type))
+              .toList(),
       sectionIndex: sectionIndex,
     );
   }
@@ -199,7 +205,10 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
 
         await _createNewStudyScreen(
           type: widget.type,
-          wordList: nextWords.map((e) => e.wordId).toList(),
+          wordList:
+              nextWords
+                  .map((e) => WordIdTypeModel(wordId: e.wordId!, type: e.type))
+                  .toList(),
           sectionIndex: nextIndex,
         );
       } else {
@@ -215,7 +224,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     else if (button == 'retry') {
       //인덱스 리스트 캐스팅!!
       final List<dynamic> rawList = sectionInfo['wordList'];
-      final retryWordList = rawList.cast<int>(); //int로 형 변환
+      final retryWordList = rawList.cast<WordIdTypeModel>(); //int로 형 변환
 
       await _createNewStudyScreen(
         type: widget.type,
@@ -228,7 +237,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
   //단어 학습 화면 생성
   Future<void> _createNewStudyScreen({
     required WordBook type,
-    required List<int> wordList,
+    required List<WordIdTypeModel> wordList,
     required int sectionIndex,
   }) async {
     final studyScreenResult = await Navigator.push(
@@ -247,6 +256,9 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
     //result 조사해서 다음 화면 실행!!
     if (studyScreenResult is Map) {
       _navigateStudyScreen(studyScreenResult);
+    } else {
+      //단어장 재호출
+      _getMyWordList(type: widget.type, wordbookId: widget.wordbookId);
     }
   }
 
@@ -264,6 +276,8 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       result = await BasicService.getBasicWordList(chapterId: wordbookId);
     } else if (type == WordBook.my) {
       result = await MywordbooksService.getMyWordList(wordbookId: wordbookId);
+    } else if (type == WordBook.favorite) {
+      result = await FavoriteWordsService.getFavoriteWordList();
     }
 
     if (mounted) {

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sense_voka/models/word_preview_model.dart';
 
+import '../enums/app_enums.dart';
 import '../widgets/new_word_card_widget.dart';
 import '../widgets/show_dialog_widget.dart';
 import 'create_mywordbook_screen.dart';
@@ -14,8 +16,8 @@ class CreateMyWordCardScreen extends StatefulWidget {
 class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
     with TickerProviderStateMixin {
   //단어 카드 리스트
-  List<Map<String, String>> wordCards = [
-    {"word": "", "meaning": ""},
+  List<WordPreviewModel> wordCards = [
+    WordPreviewModel(wordId: null, word: "", meaning: "", type: WordBook.my),
   ];
   //단어, 뜻 입력 controller 리스트
   final List<TextEditingController> _wordControllers = [
@@ -34,10 +36,10 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
 
     //controller에 리스너 추가
     _wordControllers[0].addListener(() {
-      wordCards[0]["word"] = _wordControllers[0].text;
+      wordCards[0].word = _wordControllers[0].text;
     });
     _meaningControllers[0].addListener(() {
-      wordCards[0]["meaning"] = _meaningControllers[0].text;
+      wordCards[0].meaning = _meaningControllers[0].text;
     });
   }
 
@@ -71,7 +73,14 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
   void addNewCard() {
     setState(() {
       //새 단어 정보 추가
-      wordCards.add({"word": "", "meaning": ""});
+      wordCards.add(
+        WordPreviewModel(
+          wordId: null,
+          word: "",
+          meaning: "",
+          type: WordBook.my,
+        ),
+      );
 
       // 새 컨트롤러 추가
       final wordController = TextEditingController();
@@ -79,11 +88,11 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
 
       // addListener 추가
       wordController.addListener(() {
-        wordCards[_wordControllers.indexOf(wordController)]["word"] =
+        wordCards[_wordControllers.indexOf(wordController)].word =
             wordController.text;
       });
       meaningController.addListener(() {
-        wordCards[_meaningControllers.indexOf(meaningController)]["meaning"] =
+        wordCards[_meaningControllers.indexOf(meaningController)].meaning =
             meaningController.text;
       });
 
@@ -135,8 +144,8 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
             child: ElevatedButton(
               onPressed: () {
                 //만약 카드에 빈 값을 갖는 카드가 존재한다면,
-                if (wordCards.any((card) => card["word"] == "") ||
-                    wordCards.any((card) => card["meaning"] == "")) {
+                if (wordCards.any((card) => card.word == "") ||
+                    wordCards.any((card) => card.meaning == "")) {
                   showDialogWidget(
                     context: context,
                     title: "경고",

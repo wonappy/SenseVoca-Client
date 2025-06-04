@@ -1,4 +1,7 @@
+import '../enums/app_enums.dart';
+
 class WordInfoModel {
+  final WordBook type; //단어 타입
   final int wordId; //단어 id
   final String word; //영어 단어
   final String meaning; //영어 뜻
@@ -10,6 +13,7 @@ class WordInfoModel {
   bool favorite; //즐겨찾기 여부
 
   WordInfoModel({
+    required this.type,
     required this.wordId,
     required this.word,
     required this.meaning,
@@ -22,8 +26,9 @@ class WordInfoModel {
   });
 
   //api용
-  WordInfoModel.fromJson(Map<String, dynamic> json)
-    : wordId = json['wordId'],
+  WordInfoModel.fromMyWordJson(Map<String, dynamic> json)
+    : type = WordBook.my,
+      wordId = json['mnemonicId'],
       word = json['word'],
       meaning = json['meaning'],
       pronunciation = json['phoneticSymbol'],
@@ -33,10 +38,25 @@ class WordInfoModel {
       exampleSentenceKo = json['exampleKor'],
       favorite = json['favorite'];
 
+  //BasicWord api용
+  WordInfoModel.fromBasicWordJson(Map<String, dynamic> json)
+    : type = WordBook.basic,
+      wordId = json['basicWordId'],
+      word = json['word'],
+      meaning = json['meaning'],
+      pronunciation = json['phonetic'],
+      mnemonicExample = json['association'],
+      mnemonicImageUrl = json['imageUrl'],
+      exampleSentenceEn = json['exampleEng'],
+      exampleSentenceKo = json['exampleKor'],
+      favorite = json['favorite'];
+
   @override
   String toString() {
     String result =
-        'WordInfoModel(wordId: $wordId, '
+        'WordInfoModel('
+        'type: "${type.name}", '
+        'wordId: $wordId, '
         'word: "$word", '
         'meaning: "$meaning", '
         'pronunciation: "$pronunciation", '
