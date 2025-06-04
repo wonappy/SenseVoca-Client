@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/user_model.dart';
 import 'package:sense_voka/screens/essential_wordbook_screen.dart';
+import 'package:sense_voka/screens/main_wordbook_screen.dart';
 import 'package:sense_voka/screens/setting_account_screen.dart';
 
+import '../enums/app_enums.dart';
 import '../widgets/navigation_button_widget.dart';
 import 'mywordbook_screen.dart';
 
@@ -310,7 +312,11 @@ class _MainScreenState extends State<MainScreen> {
                 text: "즐겨찾기 단어장",
                 bHeight: 90,
                 bWidth: 360,
-                destinationScreen: MyWordBookScreen(),
+                destinationScreen: MainWordBookScreen(
+                  type: WordBook.favorite,
+                  wordbookId: 0,
+                  setName: "즐겨찾기 단어장",
+                ),
               ),
             ],
           ),

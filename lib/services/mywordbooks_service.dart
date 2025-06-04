@@ -221,7 +221,7 @@ class MywordbooksService {
         final dynamic data = result['data'];
         for (var wordInfo in data) {
           //응답list를 각 객체로 생성 후 list에 저장
-          wordInfoList.add(WordInfoModel.fromJson(wordInfo));
+          wordInfoList.add(WordInfoModel.fromMyWordJson(wordInfo));
         }
         if (kDebugMode) {
           print(wordInfoList);
@@ -272,10 +272,11 @@ class MywordbooksService {
 
   //나만의 단어장 생성
   static Future<ApiResponseModel> postNewMyWordBook({
-    required List<int> wordIdList,
+    required String title,
+    required List<WordPreviewModel> words,
     required String country,
   }) async {
-    final url = Uri.parse('$_baseUrl/myword-info');
+    final url = Uri.parse('$_baseUrl/add-book');
     ApiResponseModel returnMsg;
 
     if (kDebugMode) {
@@ -290,39 +291,31 @@ class MywordbooksService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode({'wordIds': wordIdList, 'phoneticType': country}),
+        body: jsonEncode({
+          'title': title,
+          'words': words.map((w) => w.toJson()).toList(),
+        }),
       );
 
-      if (response.statusCode == 200) {
+      print(WordPreviewModel.encodeToJson(words));
+
+      if (response.statusCode == 201) {
         //body json 값 가져오기
         final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
 
         if (kDebugMode) {
-          print('[getMyWordsInfo] : 단어 상세 정보 반환 성공 - ${result['message']}');
-        }
-
-        //단어 상세정보 리스트
-        List<WordInfoModel> wordInfoList = [];
-
-        //data -> WordPreviewModel 추출
-        final dynamic data = result['data'];
-        for (var wordInfo in data) {
-          //응답list를 각 객체로 생성 후 list에 저장
-          wordInfoList.add(WordInfoModel.fromJson(wordInfo));
-        }
-        if (kDebugMode) {
-          print(wordInfoList);
+          print('[postNewMyWordBook] : 새 단어장 생성 성공 - ${result['message']}');
         }
 
         returnMsg = ApiResponseModel(
           isSuccess: true,
-          title: "단어 상세 정보 반환 성공",
+          title: "새 단어장 생성 성공",
           msg: "${result['message']}",
-          data: wordInfoList,
+          data: result['data'],
         );
       } else if (response.statusCode == 403) {
         if (kDebugMode) {
-          print('[getMyWordsInfo] - AccessToken 만료. 토큰 재발급 필요.');
+          print('[postNewMyWordBook] - AccessToken 만료. 토큰 재발급 필요.');
         }
 
         //403으로 실패했을 경우 -> a토큰 값 만료
@@ -343,14 +336,14 @@ class MywordbooksService {
 
         returnMsg = ApiResponseModel(
           isSuccess: false,
-          title: "단어 상세 정보 반환 실패",
-          msg: "[getMyWordsInfo] - ${result['message']}",
+          title: "새 단어장 생성 실패",
+          msg: "[postNewMyWordBook] - ${result['message']}",
         );
       }
       return returnMsg;
     } catch (e) {
       if (kDebugMode) {
-        print('오류 발생: [getMyWordList] $e');
+        print('오류 발생: [postNewMyWordBook] $e');
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return returnMsg;

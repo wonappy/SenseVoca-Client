@@ -1,14 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:sense_voka/screens/create_mywordcard_screen.dart';
 import 'package:sense_voka/screens/create_random_wordbook_screen.dart';
 import 'package:sense_voka/services/mywordbooks_service.dart';
 import 'package:sense_voka/widgets/callback_button_widget.dart';
-import 'package:sense_voka/widgets/navigation_button_widget.dart';
 
+import '../enums/app_enums.dart';
 import '../models/word_book_info_model.dart';
+import '../models/word_preview_model.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_set_button_widget.dart';
@@ -21,7 +21,7 @@ class MyWordBookScreen extends StatefulWidget {
 }
 
 class _MyWordBookScreenState extends State<MyWordBookScreen> {
-  static final storage = FlutterSecureStorage();
+  //static final storage = FlutterSecureStorage();
 
   //단어장 정렬 방법
   final List<String> _sortAlgorithm = ["생성 순", "최근 접근 순"];
@@ -261,14 +261,20 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       MaterialPageRoute(builder: (context) => destinationScreen),
     );
 
+    int tempWordBookId = wordSet.last.wordBookId + 99;
+
     if (popResult is Map) {
       //api 호출
       //호출 결과를 기다리는 동안 표시될 버튼 UI
       final String title = popResult["title"];
       final words = popResult["words"];
 
+      if (kDebugMode) {
+        print("제목: $title, 단어: $words");
+      }
+
       WordBookInfoModel newWordbook = WordBookInfoModel(
-        wordBookId: wordSet.last.wordBookId + 1, //아이디가 겹치지 않도록...
+        wordBookId: tempWordBookId, //아이디가 겹치지 않도록...
         title: title,
         wordCount: words.length,
         createDate: DateTime.now(),
@@ -281,8 +287,21 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       });
 
       //api 호출 및 결과 처리
-      //success -> 로딩 컨테이너 삭제
-      //fail -> 버튼 자체 삭제
+      bool result = await _postMyWordBook(
+        title: popResult["title"],
+        words: popResult["words"],
+        country: Country.us,
+      );
+
+      if (result) {
+        //success -> 단어장 목록 다시 호출
+        _getWordSet();
+      } else {
+        //fail -> 버튼 자체 삭제
+        setState(() {
+          wordSet.removeWhere((w) => w.wordBookId == tempWordBookId);
+        });
+      }
     }
   }
 
@@ -320,5 +339,44 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
         }
       }
     }
+  }
+
+  //나만의 단어장 생성 api
+  Future<bool> _postMyWordBook({
+    required String title,
+    required List<WordPreviewModel> words,
+    required Country country,
+  }) async {
+    //api 호출
+    var result = await MywordbooksService.postNewMyWordBook(
+      title: title,
+      words: words,
+      country: country.name,
+    );
+
+    if (mounted) {
+      if (result.isSuccess) {
+        return true;
+      } else {
+        if (result.title == "오류 발생") {
+          //오류 발생
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+          return false;
+        } else if (result.title == "Token 재발급") {
+          //토큰 재발급 및 재실행 과정
+        } else {
+          //일반 실패 응답
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+          return false;
+        }
+      }
+    }
+    return false;
   }
 }

@@ -56,7 +56,7 @@ class _EssentialChapterButtonState extends State<EssentialChapterButton> {
                     type: WordBook.basic,
                     wordbookId: widget.chapterId,
                     setName: widget.title,
-                    wordCount: widget.wordCount,
+                    //wordCount: widget.wordCount,
                   ),
               fullscreenDialog: true,
             ),

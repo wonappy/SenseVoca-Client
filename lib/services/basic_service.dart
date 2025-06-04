@@ -304,7 +304,9 @@ class BasicService {
         final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
 
         if (kDebugMode) {
-          print('[getMyWordList] : 나만의 단어장 단어 목록 반환 성공 - ${result['message']}');
+          print(
+            '[getBasicWordList] : 기본 단어장 단어 목록 반환 성공 - ${result['message']}',
+          );
         }
 
         //단어장 리스트
@@ -401,7 +403,7 @@ class BasicService {
         final dynamic data = result['data'];
         for (var wordInfo in data) {
           //응답list를 각 객체로 생성 후 list에 저장
-          wordInfoList.add(WordInfoModel.fromJson(wordInfo));
+          wordInfoList.add(WordInfoModel.fromBasicWordJson(wordInfo));
         }
         if (kDebugMode) {
           print(wordInfoList);

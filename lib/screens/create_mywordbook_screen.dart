@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:sense_voka/screens/create_mywordcard_screen.dart';
+import 'package:sense_voka/models/word_preview_model.dart';
 import 'package:sense_voka/widgets/show_dialog_widget.dart';
 
-import '../models/word_book_info_model.dart';
 import '../widgets/textfield_line_widget.dart';
 
 class CreateMywordbookScreen extends StatefulWidget {
-  final List<Map<String, String>> wordsInfo;
+  final List<WordPreviewModel> wordsInfo;
 
   const CreateMywordbookScreen({super.key, required this.wordsInfo});
 
@@ -19,8 +18,6 @@ class _CreateMywordbookScreenState extends State<CreateMywordbookScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double screenWidth = MediaQuery.of(context).size.width; //화면 가로 길이
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -34,7 +31,7 @@ class _CreateMywordbookScreenState extends State<CreateMywordbookScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 10),
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 //단어장 생성 api 활용
                 String title = titleController.text;
                 if (title == "") {
@@ -140,19 +137,16 @@ class _CreateMywordbookScreenState extends State<CreateMywordbookScreen> {
                   ],
                 ),
                 SizedBox(height: 5),
-                for (Map<String, String> word in widget.wordsInfo)
+                for (WordPreviewModel word in widget.wordsInfo)
                   Column(
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.start,
                         children: [
+                          Expanded(flex: 3, child: Text(" ${word.word}")), //단어
                           Expanded(
                             flex: 3,
-                            child: Text(" ${word["word"]}"),
-                          ), //단어
-                          Expanded(
-                            flex: 3,
-                            child: Text(" ${word["meaning"]}"),
+                            child: Text(" ${word.meaning}"),
                           ), //뜻
                           Padding(
                             padding: const EdgeInsets.only(right: 15),

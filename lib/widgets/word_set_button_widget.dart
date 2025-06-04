@@ -33,7 +33,7 @@ class WordSetButton extends StatelessWidget {
                   type: WordBook.my,
                   wordbookId: wordbookId,
                   setName: setName,
-                  wordCount: wordCount,
+                  //wordCount: wordCount,
                 ),
             fullscreenDialog: true,
           ),
