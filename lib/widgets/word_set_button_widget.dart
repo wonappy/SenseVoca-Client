@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/main_wordbook_screen.dart';
+import 'package:sense_voka/screens/wordbook_setting_screen.dart';
 
 import '../enums/app_enums.dart';
 
@@ -89,7 +90,18 @@ class WordSetButton extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.settings, size: 50),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WordBookSettingScreen(),
+                  fullscreenDialog: true,
+                ),
+              );
+            },
+            icon: Icon(Icons.settings, size: 50),
+          ),
         ],
       ),
     );

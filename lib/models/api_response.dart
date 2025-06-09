@@ -3,7 +3,7 @@ class ApiResponseModel {
   final bool isSuccess;
   final String title;
   final String msg;
-  final dynamic? data;
+  final dynamic data;
 
   const ApiResponseModel({
     required this.isSuccess,
