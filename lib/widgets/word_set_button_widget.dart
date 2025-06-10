@@ -91,6 +91,7 @@ class WordSetButton extends StatelessWidget {
             ),
           ),
           IconButton(
+            padding: EdgeInsets.all(0),
             onPressed: () {
               Navigator.push(
                 context,
