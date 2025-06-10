@@ -21,10 +21,10 @@ class PronunciationResultModel {
 
 //포괄 점수
 class OverallScoreModel {
-  final int accuracy; //정확도
-  final int fluency; //유창성
-  final int completeness; //완성도
-  final int total; //총점
+  final double accuracy; //정확도
+  final double fluency; //유창성
+  final double completeness; //완성도
+  final double total; //총점
 
   OverallScoreModel({
     required this.accuracy,
@@ -43,7 +43,7 @@ class OverallScoreModel {
 //세부 발음 점수
 class PhonemeResultModel {
   final String symbol; //발음기호
-  final int score; //점수
+  final double score; //점수
   final String feedback; //피드백
 
   PhonemeResultModel({
