@@ -157,6 +157,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
                                   ).format(wordSet[i].lastAccess),
                                   bWidth: 360,
                                   bHeight: 90,
+                                  onWordbookChanged: () { _getWordSet(); },
                                 ),
                                 if (wordSet[i].isLoading)
                                   Positioned.fill(
