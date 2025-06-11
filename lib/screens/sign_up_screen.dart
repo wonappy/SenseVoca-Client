@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/api_response.dart';
+import 'package:sense_voka/models/interest_info_model.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
+import 'package:sense_voka/services/inital_data_service.dart';
 import 'package:sense_voka/services/users_service.dart';
 
 import '../styles/error_snack_bar_style.dart';
@@ -20,21 +22,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _nameController = TextEditingController(); //닉네임
   String email = "", pw = "", name = "";
 
-  final List<String> _interestCategories = ["운동"];
-  String? _selectedInterest = "";
+  List<InterestInfoModel> _interestCategories = [];
+  int? _selectedInterest;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    setState(() {
-      _selectedInterest = null;
-    });
+    //관심사 목록 가져오기
+    _getInterestList();
   }
 
   //이메일 중복 확인 api 호출
   void _emailCheckButtonTap() async {
     final String email = _emailController.text;
+
+    if (email == "") {
+      await showDialogWidget(
+        context: context,
+        title: "이메일 미기입",
+        msg: "이메일을 입력해주세요.",
+      );
+      return;
+    }
 
     //api 호출
     final ApiResponseModel result = await UsersService.getCheckEmailDuplicate(
@@ -75,9 +85,9 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final String email = _emailController.text;
     final String pw = _pwController.text;
     final String name = _nameController.text;
-    final int interestId = 1;
+    final int? interestId = _selectedInterest;
 
-    if (email == "" || pw == "" || name == "") {
+    if (email == "" || pw == "" || name == "" || interestId == null) {
       await showDialogWidget(
         context: context,
         title: "필수 요소 입력",
@@ -106,6 +116,38 @@ class _SignUpScreenState extends State<SignUpScreen> {
         if (mounted) {
           Navigator.pop(context);
         }
+      } else {
+        if (result.title == "오류 발생") {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else {
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
+
+    _emailController.text = "";
+    _nameController.text = "";
+    _pwController.text = "";
+    _selectedInterest = null;
+  }
+
+  //관심사 리스트 api 호출
+  void _getInterestList() async {
+    //api 호출
+    final ApiResponseModel result = await InitialDataService.getInterestList();
+
+    if (mounted) {
+      if (result.isSuccess) {
+        //관심사 리스트 대입
+        setState(() {
+          _interestCategories = result.data;
+        });
       } else {
         if (result.title == "오류 발생") {
           ScaffoldMessenger.of(
@@ -273,6 +315,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       child: DropdownButton(
                         isExpanded: true,
                         dropdownColor: Colors.white,
+                        menuMaxHeight: MediaQuery.of(context).size.height * 0.3,
                         underline: SizedBox.shrink(),
                         hint: Text(
                           "관심사를 선택해주세요.",
@@ -286,14 +329,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             _interestCategories
                                 .map(
                                   (e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(e),
+                                    value: e.interestId,
+                                    child: Text(e.type),
                                   ),
                                 )
                                 .toList(),
                         onChanged: (value) {
                           setState(() {
-                            _selectedInterest = value!;
+                            _selectedInterest = value;
                           });
                         },
                       ),

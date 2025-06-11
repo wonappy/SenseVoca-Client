@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/request_models/word_id_type_model.dart';
 import 'package:sense_voka/services/basic_service.dart';
+import 'package:sense_voka/services/users_service.dart';
 import 'package:sense_voka/widgets/end_card_widget.dart';
 import '../enums/app_enums.dart';
 import '../models/word_info_model.dart';
@@ -79,14 +80,20 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
   //즐겨찾기 버튼이 눌렸을 때 콜백 함수
   void _toggleFavoriteButton({required WordInfoModel word}) {
-    print("눌림 단어 : $word");
+    if (kDebugMode) {
+      print("눌림 단어 : $word");
+    }
     if (word.favorite == false) {
       //즐겨찾기 등록
-      print("즐겨찾기 등록");
+      if (kDebugMode) {
+        print("즐겨찾기 등록");
+      }
       _postToFavorites(word: word);
     } else if (word.favorite == true) {
       //즐겨찾기 해제
-      print("즐겨찾기 해제");
+      if (kDebugMode) {
+        print("즐겨찾기 해제");
+      }
       _removeFromFavorites(word: word);
     }
   }
@@ -114,6 +121,11 @@ class _WordStudyScreenState extends State<WordStudyScreen>
       return;
     }
 
+    //구간 내 학습 완료 단어
+    final int learnedCount = wordCount - retryWordList.length;
+    //오늘의 학습 단어 업데이트
+    _postStatusUpdate(learnedCount: learnedCount);
+
     Navigator.pop(context, {
       'button': 'retry',
       'currentIndex': widget.sectionIndex,
@@ -123,6 +135,11 @@ class _WordStudyScreenState extends State<WordStudyScreen>
 
   //다음 구간 이동 버튼 => 한 번 더 복습과 헷갈리지 않게 버튼 종류와 현재 섹션인덱스 값 전달
   void _nextSection() {
+    //구간 내 학습 완료 단어
+    final int learnedCount = wordCount - retryWordList.length;
+    //오늘의 학습 단어 업데이트
+    _postStatusUpdate(learnedCount: learnedCount);
+
     Navigator.pop(context, {
       'button': 'nextSection',
       'currentIndex': widget.sectionIndex,
@@ -565,6 +582,37 @@ class _WordStudyScreenState extends State<WordStudyScreen>
             title: result.title,
             msg: result.msg,
           );
+        }
+      }
+    }
+  }
+
+  //즐겨찾기 등록 api
+  void _postStatusUpdate({required int learnedCount}) async {
+    //api 호출
+    dynamic result = await UsersService.postUserStatusUpdate(
+      learnedCount: learnedCount,
+    );
+
+    if (result != null) {
+      if (mounted) {
+        if (result.isSuccess) {
+        } else {
+          if (result.title == "오류 발생") {
+            //오류 발생
+            ScaffoldMessenger.of(context).showSnackBar(
+              errorSnackBarStyle(context: context, result: result),
+            );
+          } else if (result.title == "Token 재발급") {
+            //토큰 재발급 및 재실행 과정
+          } else {
+            //일반 실패 응답
+            await showDialogWidget(
+              context: context,
+              title: result.title,
+              msg: result.msg,
+            );
+          }
         }
       }
     }

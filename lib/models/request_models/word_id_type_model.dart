@@ -17,4 +17,15 @@ class WordIdTypeModel {
 
     return result;
   }
+
+  //contains 비교를 위한 ==, hashCode 재정의
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is WordIdTypeModel && other.wordId == wordId;
+  }
+
+  @override
+  int get hashCode => wordId.hashCode;
 }

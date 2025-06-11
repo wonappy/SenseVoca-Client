@@ -359,9 +359,6 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
                                                       searchResults[index];
                                                   return InkWell(
                                                     onTap: () {
-                                                      print(
-                                                        "InkWell 탭 감지: ${word.word}",
-                                                      );
                                                       selectSearchResult(word);
                                                     },
                                                     child: Container(
