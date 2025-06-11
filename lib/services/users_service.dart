@@ -22,12 +22,16 @@ class UsersService {
     }
 
     try {
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: {'Content-Type': 'application/json'},
+      );
 
       final dynamic result = jsonDecode(response.body);
 
       //중복되지 않은 이메일
       if (response.statusCode == 200 && result['data'] == false) {
+        final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
         if (kDebugMode) {
           print('사용 가능한 이메일 - ${result['message']}');
         }
@@ -88,6 +92,7 @@ class UsersService {
       final dynamic result = jsonDecode(response.body);
       //회원가입 성공
       if (response.statusCode == 201 && result['data'] == true) {
+        final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
         if (kDebugMode) {
           print('회원가입 성공 - ${result['message']}');
         }
@@ -142,6 +147,7 @@ class UsersService {
 
       //로그인 성공
       if (response.statusCode == 200) {
+        final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
         final dynamic data = result['data'];
         if (kDebugMode) {
           print('로그인 성공 - ${result['message']}');
@@ -188,6 +194,79 @@ class UsersService {
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return (returnMsg, null);
+    }
+  }
+
+  //오늘 학습 단어 갱신
+  static Future<ApiResponseModel> postUserStatusUpdate({
+    required int learnedCount,
+  }) async {
+    final url = Uri.parse('$_baseUrl/status/update/$learnedCount');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('postUserStatusUpdate 호출');
+    }
+
+    try {
+      final accessToken = await storage.read(key: "AccessToken");
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        //body json 값 가져오기
+        final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
+
+        if (kDebugMode) {
+          print(
+            '[postUserStatusUpdate] : 학습 단어 개수 갱신 성공 - ${result['message']}',
+          );
+        }
+
+        returnMsg = ApiResponseModel(
+          isSuccess: true,
+          title: "학습 단어 개수 갱신 성공",
+          msg: "${result['message']}",
+        );
+      } else if (response.statusCode == 403) {
+        if (kDebugMode) {
+          print('[postUserStatusUpdate] - AccessToken 만료. 토큰 재발급 필요.');
+        }
+
+        //403으로 실패했을 경우 -> a토큰 값 만료
+        // -> 재발급 받은 다음
+        // -> 해당 api 호출 다시 시도
+
+        returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "Token 재발급",
+          msg: "AccessToken 만료. 토큰 재발급 필요.",
+        );
+      } else {
+        //body json 값 가져오기
+        final dynamic result = jsonDecode(response.body);
+        if (kDebugMode) {
+          print('${result['message']}');
+        }
+
+        returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "학습 단어 개수 갱신 실패",
+          msg: "[postUserStatusUpdate] - ${result['message']}",
+        );
+      }
+      return returnMsg;
+    } catch (e) {
+      if (kDebugMode) {
+        print('오류 발생: [postUserStatusUpdate] $e');
+      }
+      returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
+      return returnMsg;
     }
   }
 
