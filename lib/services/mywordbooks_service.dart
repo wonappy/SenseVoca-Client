@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -13,6 +14,58 @@ class MywordbooksService {
   // Create storage
   static final storage = FlutterSecureStorage();
   static const String _baseUrl = "${baseUrl}mywordbooks";
+
+  // [+] 공통 - 헤더
+  static Future<Map<String, String>> _getHeaders() async {
+    final accessToken = await storage.read(key: "AccessToken");
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    };
+  }
+
+  // [+] 공통 - 에러 처리 함수
+  static ApiResponseModel _handleResponse(http.Response response, String successMessage) {
+    print('응답 상태코드: ${response.statusCode}');
+    print('응답 본문: "${response.body}"');
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      if (response.body.isEmpty) {
+        return ApiResponseModel(
+          isSuccess: true,
+          title: "성공",
+          msg: successMessage,
+          data: null,
+        );
+      }
+
+      try {
+        final data = json.decode(response.body);
+        // fromJson 대신 직접 생성
+        return ApiResponseModel(
+          isSuccess: data['isSuccess'] ?? true,
+          title: data['title'] ?? "성공",
+          msg: data['msg'] ?? successMessage,
+          data: data['data'],
+        );
+      } catch (e) {
+        print('JSON 파싱 에러: $e');
+        return ApiResponseModel(
+          isSuccess: true,
+          title: "성공",
+          msg: successMessage,
+          data: null,
+        );
+      }
+    }
+
+    return ApiResponseModel(
+      isSuccess: false,
+      title: "오류 발생",
+      msg: "서버 오류: ${response.statusCode}",
+      data: null,
+    );
+  }
 
   //나만의 단어장 리스트 가져오기
   static Future<ApiResponseModel> getMyWordBookList() async {
@@ -436,5 +489,98 @@ class MywordbooksService {
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return returnMsg;
     }
+  }
+
+  // >> 단어장 환경 설정
+  // [PUT] 나만의 단어장 -> 제목 수정
+  static Future<ApiResponseModel> putMyWordBookTitle({required int wordbookId, required String newTitle}) async {
+    final url = Uri.parse('$_baseUrl/$wordbookId/rename');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('putMyWordBookTitle 호출 : $url');
+      print('새 제목 : $newTitle');
+    }
+
+    try {
+      final headers = await _getHeaders(); // 헤더
+      final body = jsonEncode({'title': newTitle}); // 사용자 입력 : 새 제목
+      final response = await http.put(url, headers: headers, body: body); // 요청, 응답
+
+      return _handleResponse(response, '단어장 제목이 수정되었습니다.');
+    }
+    catch (e) {
+      if (kDebugMode) {
+        print('deleteWordBook 에러: $e');
+      }
+      returnMsg = ApiResponseModel(
+        isSuccess: false,
+        title: "오류 발생",
+        msg: "네트워크 오류가 발생했습니다.",
+        data: null,
+      );
+    }
+
+    return returnMsg;
+  }
+
+  // [DELETE] 나만의 단어장 -> 단어 삭제
+  static Future<ApiResponseModel> deleteMyWordBookWord({required int wordbookId, required int wordId}) async {
+    final url = Uri.parse('$_baseUrl/$wordbookId/words/$wordId');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('deleteWordBook 호출 : $url');
+    }
+
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(url, headers: headers);
+
+      return _handleResponse(response, '단어가 삭제되었습니다.');
+    }
+    catch (e) {
+      if (kDebugMode) {
+        print('deleteWordBook 에러: $e');
+      }
+      returnMsg = ApiResponseModel(
+        isSuccess: false,
+        title: "오류 발생",
+        msg: "네트워크 오류가 발생했습니다.",
+        data: null,
+      );
+    }
+
+    return returnMsg;
+  }
+
+  // [DELETE] 나만의 단어장 -> 단어장 삭제
+  static Future<ApiResponseModel> deleteMyWordBook({required int wordbookId}) async {
+    final url = Uri.parse('$_baseUrl/$wordbookId');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('deleteWordBook 호출 : $url');
+    }
+
+    try {
+      final headers = await _getHeaders();
+      final response = await http.delete(url, headers: headers);
+
+      return _handleResponse(response, '단어장이 삭제되었습니다.');
+    }
+    catch (e) {
+      if (kDebugMode) {
+        print('deleteWordBook 에러: $e');
+      }
+      returnMsg = ApiResponseModel(
+        isSuccess: false,
+        title: "오류 발생",
+        msg: "네트워크 오류가 발생했습니다.",
+        data: null,
+      );
+    }
+
+    return returnMsg;
   }
 }

@@ -1,8 +1,11 @@
+//import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
+
 import 'package:flutter/material.dart';
 import 'package:sense_voka/screens/main_wordbook_screen.dart';
 import 'package:sense_voka/screens/wordbook_setting_screen.dart';
 
 import '../enums/app_enums.dart';
+import '../models/word_preview_model.dart';
 
 class WordSetButton extends StatelessWidget {
   final int wordbookId;
@@ -11,6 +14,7 @@ class WordSetButton extends StatelessWidget {
   final double bHeight;
   final int wordCount;
   final String lastAccess;
+  final VoidCallback? onWordbookChanged;
 
   const WordSetButton({
     super.key,
@@ -20,6 +24,7 @@ class WordSetButton extends StatelessWidget {
     required this.setName,
     required this.wordCount,
     required this.lastAccess,
+    this.onWordbookChanged,
   });
 
   @override
@@ -92,14 +97,18 @@ class WordSetButton extends StatelessWidget {
           ),
           IconButton(
             padding: EdgeInsets.all(0),
-            onPressed: () {
-              Navigator.push(
+             onPressed: () async {
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => WordBookSettingScreen(),
+                  builder: (context) => WordBookSettingScreen(wordbookId: wordbookId, setName: setName),
                   fullscreenDialog: true,
                 ),
               );
+              // 단어장 환경 설정 -> 수정 or 삭제 발생 시 callback 호출
+              if (result != null) {
+                onWordbookChanged?.call();
+              }
             },
             icon: Icon(Icons.settings, size: 50),
           ),
