@@ -12,6 +12,59 @@ class UsersService {
   static final storage = FlutterSecureStorage();
   static const String _baseUrl = "${baseUrl}users";
 
+
+  // [+] 공통 - 헤더
+  static Future<Map<String, String>> _getHeaders() async {
+    final accessToken = await storage.read(key: "AccessToken");
+    return {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $accessToken',
+    };
+  }
+
+  // [+] 공통 - 에러 처리 함수
+  static ApiResponseModel _handleResponse(http.Response response, String successMessage) {
+    print('응답 상태코드: ${response.statusCode}');
+    print('응답 본문: "${response.body}"');
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      if (response.body.isEmpty) {
+        return ApiResponseModel(
+          isSuccess: true,
+          title: "성공",
+          msg: successMessage,
+          data: null,
+        );
+      }
+
+      try {
+        final data = json.decode(response.body);
+        // fromJson 대신 직접 생성
+        return ApiResponseModel(
+          isSuccess: data['isSuccess'] ?? true,
+          title: data['title'] ?? "성공",
+          msg: data['msg'] ?? successMessage,
+          data: data['data'],
+        );
+      } catch (e) {
+        print('JSON 파싱 에러: $e');
+        return ApiResponseModel(
+          isSuccess: true,
+          title: "성공",
+          msg: successMessage,
+          data: null,
+        );
+      }
+    }
+
+    return ApiResponseModel(
+      isSuccess: false,
+      title: "오류 발생",
+      msg: "서버 오류: ${response.statusCode}",
+      data: null,
+    );
+  }
+
   //이메일 중복 확인
   static Future<ApiResponseModel> getCheckEmailDuplicate(String email) async {
     final url = Uri.parse('$_baseUrl/$email/check-email');
@@ -136,9 +189,7 @@ class UsersService {
         body: jsonEncode({'email': email, 'password': pw}),
       );
 
-      final dynamic result = jsonDecode(
-        response.body,
-      ); //로그인 실패 시, 응답이 없어서 error로 분류!!!!
+      final result = jsonDecode(utf8.decode(response.bodyBytes));
 
       //로그인 성공
       if (response.statusCode == 200) {
@@ -150,7 +201,7 @@ class UsersService {
         //사용자 객체 생성
         UserModel user = UserModel.fromJsonWithCustom(
           json: data,
-          name: "권원경",
+          name: data['nickname'],
           email: email,
         );
 
@@ -248,6 +299,34 @@ class UsersService {
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return (returnMsg);
+    }
+  }
+
+  // >> 메인 화면
+// [GET] 학습 통계 조회 (학습한 단어 & 연속 학습 일수)
+  static Future<ApiResponseModel> getUserStatus() async {
+    final url = Uri.parse('$_baseUrl/status');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print('getUserStatus 호출 : $url');
+    }
+
+    try {
+      final headers = await _getHeaders(); // 헤더, 요청
+      final response = await http.get(url, headers: headers); // 응답
+
+      return _handleResponse(response, '사용자의 학습 통계 조회 성공');
+    } catch (e) {
+      if (kDebugMode) {
+        print('getUserStatus 에러: $e');
+      }
+      return returnMsg = ApiResponseModel(
+        isSuccess: false,
+        title: "오류 발생",
+        msg: "네트워크 오류가 발생했습니다.",
+        data: null,
+      );
     }
   }
 }

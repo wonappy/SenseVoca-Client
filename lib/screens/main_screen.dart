@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/user_model.dart';
+import 'package:sense_voka/models/user_status_model.dart';
 import 'package:sense_voka/screens/essential_wordbook_screen.dart';
 import 'package:sense_voka/screens/main_wordbook_screen.dart';
 import 'package:sense_voka/screens/setting_account_screen.dart';
@@ -10,8 +12,9 @@ import 'mywordbook_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final UserModel user;
+  final UserStatusModel userStatus;
 
-  const MainScreen({super.key, required this.user});
+  const MainScreen({super.key, required this.user, required this.userStatus});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -94,8 +97,9 @@ class _MainScreenState extends State<MainScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+
                         Text(
-                          widget.user.name,
+                          "${widget.user.name}",
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 30,
@@ -244,7 +248,7 @@ class _MainScreenState extends State<MainScreen> {
                               textBaseline: TextBaseline.alphabetic,
                               children: [
                                 Text(
-                                  '75',
+                                  '${widget.userStatus.todayCount}',
                                   style: TextStyle(
                                     fontSize: 50,
                                     fontWeight: FontWeight.bold,
@@ -281,7 +285,7 @@ class _MainScreenState extends State<MainScreen> {
                         ),
                         Text('님, 연속 학습 ', style: TextStyle(fontSize: 15)),
                         Text(
-                          '10',
+                          '${widget.userStatus.streakDays}',
                           style: TextStyle(
                             fontSize: 25,
                             fontWeight: FontWeight.w800,

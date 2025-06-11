@@ -15,7 +15,7 @@ class UserModel {
   UserModel.fromJson(Map<String, dynamic> json)
     : userId = json['userId'],
       email = json['email'],
-      name = json['nickName'],
+      name = json['nickname'],
       accessToken = json['accessToken'];
 
   // JSON 일부 + 값 입력

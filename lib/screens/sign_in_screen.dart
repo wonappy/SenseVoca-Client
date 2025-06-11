@@ -13,6 +13,7 @@ import '../models/user_model.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
+import '../models/user_status_model.dart';
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -32,6 +33,25 @@ class _SignInScreenState extends State<SignInScreen> {
   void initState() {
     super.initState();
     _autoSingIn();
+  }
+
+  Future<UserStatusModel> _getUserStatus() async {
+    var statusResult = await UsersService.getUserStatus();
+    if (statusResult.isSuccess && statusResult.data != null) {
+      try {
+        if (statusResult.data is UserStatusModel) {
+          return statusResult.data as UserStatusModel;
+        } else if (statusResult.data is Map<String, dynamic>) {
+          return UserStatusModel.fromJson(statusResult.data as Map<String, dynamic>);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('UserStatusModel 변환 실패: $e');
+        }
+      }
+    }
+
+    return UserStatusModel(todayCount: 0, streakDays: 0);
   }
 
   //자동 로그인 -> 함수로 빼서 전체적인 흐름이 잘 보이게 변경 필요
@@ -66,9 +86,13 @@ class _SignInScreenState extends State<SignInScreen> {
               //검색 단어 목록 초기화
               _getWordInfos();
               //로그인 화면 대체 생성
+              UserStatusModel userStatus = await _getUserStatus();
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => MainScreen(user: user)),
+                MaterialPageRoute(
+                  builder: (context) => MainScreen(user: user, userStatus: userStatus),
+                  fullscreenDialog: true,
+                ),
               );
             }
           }
@@ -123,10 +147,11 @@ class _SignInScreenState extends State<SignInScreen> {
 
         if (mounted) {
           //로그인 화면 대체 생성
+          UserStatusModel userStatus = await _getUserStatus();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => MainScreen(user: user),
+              builder: (context) => MainScreen(user: user, userStatus: userStatus),
               fullscreenDialog: true,
             ),
           );
