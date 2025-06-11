@@ -12,7 +12,6 @@ class UsersService {
   static final storage = FlutterSecureStorage();
   static const String _baseUrl = "${baseUrl}users";
 
-
   // [+] 공통 - 헤더
   static Future<Map<String, String>> _getHeaders() async {
     final accessToken = await storage.read(key: "AccessToken");
@@ -23,12 +22,19 @@ class UsersService {
   }
 
   // [+] 공통 - 에러 처리 함수
-  static ApiResponseModel _handleResponse(http.Response response, String successMessage) {
-    print('응답 상태코드: ${response.statusCode}');
-    print('응답 본문: "${response.body}"');
+  static ApiResponseModel _handleResponse(
+    http.Response response,
+    String successMessage,
+  ) {
+    if (kDebugMode) {
+      print('응답 상태코드: ${response.statusCode}');
+      print('응답 본문: "${response.body}"');
+    }
 
-    if (response.statusCode == 200 || response.statusCode == 204) {
-      if (response.body.isEmpty) {
+    final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
+
+    if (result.statusCode == 200 || result.statusCode == 204) {
+      if (result.body.isEmpty) {
         return ApiResponseModel(
           isSuccess: true,
           title: "성공",
@@ -38,7 +44,7 @@ class UsersService {
       }
 
       try {
-        final data = json.decode(response.body);
+        final data = json.decode(result.body);
         // fromJson 대신 직접 생성
         return ApiResponseModel(
           isSuccess: data['isSuccess'] ?? true,
@@ -47,7 +53,9 @@ class UsersService {
           data: data['data'],
         );
       } catch (e) {
-        print('JSON 파싱 에러: $e');
+        if (kDebugMode) {
+          print('JSON 파싱 에러: $e');
+        }
         return ApiResponseModel(
           isSuccess: true,
           title: "성공",
@@ -60,7 +68,7 @@ class UsersService {
     return ApiResponseModel(
       isSuccess: false,
       title: "오류 발생",
-      msg: "서버 오류: ${response.statusCode}",
+      msg: "서버 오류: ${result.statusCode}",
       data: null,
     );
   }
@@ -382,7 +390,7 @@ class UsersService {
   }
 
   // >> 메인 화면
-// [GET] 학습 통계 조회 (학습한 단어 & 연속 학습 일수)
+  // [GET] 학습 통계 조회 (학습한 단어 & 연속 학습 일수)
   static Future<ApiResponseModel> getUserStatus() async {
     final url = Uri.parse('$_baseUrl/status');
     ApiResponseModel returnMsg;

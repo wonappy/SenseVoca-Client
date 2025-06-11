@@ -28,7 +28,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
   String? _selectedSort = "";
 
   //단어장 api
-  late List<WordBookInfoModel> wordSet;
+  late List<WordBookInfoModel> wordSets;
 
   //api 호출 상태 -> t: 로딩 중, f: 호출 완료
   bool isLoading = true;
@@ -101,7 +101,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "총 ${wordSet.length}개",
+                            "총 ${wordSets.length}개",
                             style: TextStyle(fontSize: 19),
                           ),
                           Container(
@@ -125,12 +125,12 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
                                 setState(() {
                                   _selectedSort = value!;
                                   if (_selectedSort == "최근 접근 순") {
-                                    wordSet.sort(
+                                    wordSets.sort(
                                       (a, b) =>
                                           b.lastAccess.compareTo(a.lastAccess),
                                     );
                                   } else if (_selectedSort == "생성 순") {
-                                    wordSet.sort(
+                                    wordSets.sort(
                                       (a, b) =>
                                           a.createDate.compareTo(b.createDate),
                                     );
@@ -143,25 +143,25 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
                       ),
                       SizedBox(height: 20),
                       //단어장 목록
-                      for (int i = 0; i < wordSet.length; i++)
+                      for (int i = 0; i < wordSets.length; i++)
                         Column(
                           children: [
                             Stack(
                               children: [
                                 WordSetButton(
-                                  wordbookId: wordSet[i].wordBookId,
-                                  setName: wordSet[i].title,
-                                  wordCount: wordSet[i].wordCount,
+                                  wordbookId: wordSets[i].wordBookId,
+                                  setName: wordSets[i].title,
+                                  wordCount: wordSets[i].wordCount,
                                   lastAccess: DateFormat(
                                     "yyyy.MM.dd",
-                                  ).format(wordSet[i].lastAccess),
+                                  ).format(wordSets[i].lastAccess),
                                   bWidth: 360,
                                   bHeight: 90,
                                   onWordbookChanged: () {
                                     _getWordSet();
                                   },
                                 ),
-                                if (wordSet[i].isLoading)
+                                if (wordSets[i].isLoading)
                                   Positioned.fill(
                                     child: Container(
                                       decoration: BoxDecoration(
@@ -264,9 +264,22 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       MaterialPageRoute(builder: (context) => destinationScreen),
     );
 
-    int tempWordBookId = wordSet.last.wordBookId + 99;
+    if (kDebugMode) {
+      print("popResult 받음: $popResult"); // 디버그 추가
+
+      // wordSet이 비어있는지 확인
+      print("wordSet 길이: ${wordSets.length}");
+    }
+
+    // 임시 단어장 Id 생성 -> eksdj
+    int tempWordBookId =
+        wordSets.isNotEmpty ? wordSets.last.wordBookId + 99 : 1;
 
     if (popResult is Map) {
+      if (kDebugMode) {
+        print("Map 데이터 확인됨");
+      }
+
       //api 호출
       //호출 결과를 기다리는 동안 표시될 버튼 UI
       final String title = popResult["title"];
@@ -286,7 +299,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       );
 
       setState(() {
-        wordSet.add(newWordbook);
+        wordSets.add(newWordbook);
       });
 
       //api 호출 및 결과 처리
@@ -302,7 +315,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       } else {
         //fail -> 버튼 자체 삭제
         setState(() {
-          wordSet.removeWhere((w) => w.wordBookId == tempWordBookId);
+          wordSets.removeWhere((w) => w.wordBookId == tempWordBookId);
         });
       }
     }
@@ -321,7 +334,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
     if (mounted) {
       if (result.isSuccess) {
         setState(() {
-          wordSet = result.data;
+          wordSets = result.data;
           isLoading = false;
         });
       } else {

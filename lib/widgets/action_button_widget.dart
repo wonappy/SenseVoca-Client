@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ActionButtonWidget extends StatelessWidget {
-  final double paddingHorizontal; //버튼 세로 여백
-  final double paddingVertical; //버튼 가로 여백
+  final double bHeight;
+  final double bWidth;
   final Color? foregroundColor; //버튼 글자 색상
   final Color? backgroundColor; //버튼 배경 색상
   final double? borderSide; //테두리 굵기
@@ -16,8 +16,8 @@ class ActionButtonWidget extends StatelessWidget {
   const ActionButtonWidget({
     super.key,
     required this.onPressed,
-    required this.paddingHorizontal,
-    required this.paddingVertical,
+    required this.bHeight,
+    required this.bWidth,
     required this.text,
     this.fontSize,
     this.foregroundColor,
@@ -34,13 +34,7 @@ class ActionButtonWidget extends StatelessWidget {
       onPressed: onPressed,
       style: ButtonStyle(
         animationDuration: Duration.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: WidgetStateProperty.all(
-          EdgeInsets.symmetric(
-            horizontal: paddingHorizontal,
-            vertical: paddingVertical,
-          ),
-        ),
+        padding: WidgetStateProperty.all(EdgeInsets.zero),
         foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
           if (states.contains(WidgetState.pressed) ||
               states.contains(WidgetState.hovered)) {
@@ -61,7 +55,7 @@ class ActionButtonWidget extends StatelessWidget {
                   WidgetState.hovered: Color(0xFFFF983D),
               WidgetState.any: Colors.transparent,
             }),
-        minimumSize: WidgetStateProperty.all(Size(0, 0)),
+        minimumSize: WidgetStateProperty.all(Size(bWidth, bHeight)),
         side: WidgetStateProperty.all(
           BorderSide(
             color: Color(0xFFFF983D),
