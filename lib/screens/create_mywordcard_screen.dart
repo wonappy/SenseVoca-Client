@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_preview_model.dart';
 
+import '../core/global_variables.dart';
 import '../enums/app_enums.dart';
 import '../widgets/new_word_card_widget.dart';
 import '../widgets/show_dialog_widget.dart';
@@ -30,13 +31,22 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
   //현재 단어 카드 인덱스
   int currentCardIndex = 0;
 
+  //검색 관련 변수
+  List<WordPreviewModel> searchResults = []; // 결과 리스트
+  bool showSearchResults = false; // 검색결과 출력 유무
+  late ScrollController _scrollController; //스크롤바를 위한...
+
   @override
   void initState() {
     super.initState();
 
+    //스크롤 컨트롤러 추가
+    _scrollController = ScrollController();
+
     //controller에 리스너 추가
     _wordControllers[0].addListener(() {
       wordCards[0].word = _wordControllers[0].text;
+      searchWords(_wordControllers[0].text, 0);
     });
     _meaningControllers[0].addListener(() {
       wordCards[0].meaning = _meaningControllers[0].text;
@@ -45,6 +55,12 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
 
   //카드 이동(왼쪽 오른쪽)
   void moveCard({required bool isLeft}) {
+    //이동 시, 이전 검색 결과 초기화
+    setState(() {
+      showSearchResults = false;
+      searchResults = [];
+    });
+
     if (isLeft) {
       setState(() {
         //0번째 인덱스라면 이동 안함.
@@ -83,21 +99,21 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
       );
 
       // 새 컨트롤러 추가
-      final wordController = TextEditingController();
-      final meaningController = TextEditingController();
+      _wordControllers.add(TextEditingController());
+      _meaningControllers.add(TextEditingController());
+
+      final currentIndex = _wordControllers.length - 1;
 
       // addListener 추가
-      wordController.addListener(() {
-        wordCards[_wordControllers.indexOf(wordController)].word =
-            wordController.text;
-      });
-      meaningController.addListener(() {
-        wordCards[_meaningControllers.indexOf(meaningController)].meaning =
-            meaningController.text;
+      _wordControllers[currentIndex].addListener(() {
+        wordCards[currentIndex].word = _wordControllers[currentIndex].text;
+        searchWords(_wordControllers[currentIndex].text, currentIndex);
       });
 
-      _wordControllers.add(wordController);
-      _meaningControllers.add(meaningController);
+      _meaningControllers[currentIndex].addListener(() {
+        wordCards[currentIndex].meaning =
+            _meaningControllers[currentIndex].text;
+      });
     });
   }
 
@@ -124,6 +140,49 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
         if (currentCardIndex > 0) currentCardIndex--;
       });
     }
+  }
+
+  // 단어 검색
+  void searchWords(String text, int cardIndex) {
+    //아무 글자가 없다면,
+    if (text.isEmpty) {
+      setState(() {
+        showSearchResults = false;
+        searchResults = [];
+      });
+      return;
+    }
+
+    // 단어 검색 로직 (1글자 이상)
+    final results =
+        wordSearchList
+            .where(
+              (word) => word.word.toLowerCase().startsWith(text.toLowerCase()),
+            )
+            .toList();
+
+    setState(() {
+      searchResults = results;
+      showSearchResults = results.isNotEmpty && cardIndex == currentCardIndex;
+    });
+  }
+
+  // 검색 결과 선택
+  void selectSearchResult(WordPreviewModel selectedWord) {
+    wordCards[currentCardIndex].wordId = selectedWord.wordId;
+    _wordControllers[currentCardIndex].text = selectedWord.word;
+    _meaningControllers[currentCardIndex].text = selectedWord.meaning;
+
+    setState(() {
+      showSearchResults = false;
+      searchResults = [];
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _scrollController.dispose();
   }
 
   @override
@@ -240,10 +299,118 @@ class _CreateMyWordCardScreenState extends State<CreateMyWordCardScreen>
                           ),
                         ),
                         SizedBox(height: 10),
-                        NewWordCardWidget(
-                          wordController: _wordControllers[currentCardIndex],
-                          meaningController:
-                              _meaningControllers[currentCardIndex],
+                        Stack(
+                          children: [
+                            // 단어 카드
+                            NewWordCardWidget(
+                              wordController:
+                                  _wordControllers[currentCardIndex],
+                              meaningController:
+                                  _meaningControllers[currentCardIndex],
+                            ),
+
+                            // 검색 결과
+                            if (showSearchResults && searchResults.isNotEmpty)
+                              Positioned.fill(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      showSearchResults = false;
+                                      searchResults = [];
+                                    });
+                                  },
+                                  child: Container(
+                                    color: Colors.transparent,
+                                    child: Stack(
+                                      children: [
+                                        Positioned(
+                                          top: 110,
+                                          left: 20,
+                                          right: 20,
+                                          child: GestureDetector(
+                                            onTap: () {}, // 검색 결과 내부 터치는 무시
+                                            child: Container(
+                                              constraints: BoxConstraints(
+                                                maxHeight: 130,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                                border: Border.all(
+                                                  color: Color(0xFFFF983D),
+                                                  width: 2,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withValues(alpha: 0.2),
+                                                    blurRadius: 5,
+                                                    offset: Offset(0, 3),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: ListView.builder(
+                                                shrinkWrap: true,
+                                                padding: EdgeInsets.zero,
+                                                itemCount: searchResults.length,
+                                                itemBuilder: (context, index) {
+                                                  final word =
+                                                      searchResults[index];
+                                                  return InkWell(
+                                                    onTap: () {
+                                                      print(
+                                                        "InkWell 탭 감지: ${word.word}",
+                                                      );
+                                                      selectSearchResult(word);
+                                                    },
+                                                    child: Container(
+                                                      padding:
+                                                          EdgeInsets.symmetric(
+                                                            horizontal: 16,
+                                                            vertical: 8,
+                                                          ),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            word.word,
+                                                            style: TextStyle(
+                                                              fontSize: 18,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w800,
+                                                              color: Color(
+                                                                0xFFFF983D,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          Text(
+                                                            word.meaning,
+                                                            style: TextStyle(
+                                                              fontSize: 13,
+                                                              color:
+                                                                  Colors
+                                                                      .black54,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         SizedBox(height: 5),
                         //카드 삭제 버튼

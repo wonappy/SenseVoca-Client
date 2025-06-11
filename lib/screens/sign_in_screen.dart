@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sense_voka/core/global_variables.dart';
 import 'package:sense_voka/screens/main_screen.dart';
 import 'package:sense_voka/screens/sign_up_screen.dart';
+import 'package:sense_voka/services/inital_data_service.dart';
 import 'package:sense_voka/services/users_service.dart';
 
 import '../models/user_model.dart';
@@ -61,6 +63,8 @@ class _SignInScreenState extends State<SignInScreen> {
 
             //자동 로그인
             if (mounted) {
+              //검색 단어 목록 초기화
+              _getWordInfos();
               //로그인 화면 대체 생성
               Navigator.pushReplacement(
                 context,
@@ -114,6 +118,9 @@ class _SignInScreenState extends State<SignInScreen> {
           print("토큰 정보 : $allValues");
         }
 
+        //단어 정보 리스트 불러오기
+        _getWordInfos();
+
         if (mounted) {
           //로그인 화면 대체 생성
           Navigator.pushReplacement(
@@ -130,6 +137,35 @@ class _SignInScreenState extends State<SignInScreen> {
             context,
           ).showSnackBar(errorSnackBarStyle(context: context, result: result));
         } else {
+          await showDialogWidget(
+            context: context,
+            title: result.title,
+            msg: result.msg,
+          );
+        }
+      }
+    }
+  }
+
+  //단어 검색 리스트 호출 api
+  Future<void> _getWordInfos() async {
+    //api 호출
+    var result = await InitialDataService.getWordInfos();
+
+    if (mounted) {
+      if (result.isSuccess) {
+        //global 변수 초기화
+        wordSearchList = result.data;
+      } else {
+        if (result.title == "오류 발생") {
+          //오류 발생
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+        } else if (result.title == "Token 재발급") {
+          //토큰 재발급 및 재실행 과정
+        } else {
+          //일반 실패 응답
           await showDialogWidget(
             context: context,
             title: result.title,

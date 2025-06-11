@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_info_model.dart';
 import 'package:sense_voka/styles/example_sentence_style.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:sense_voka/widgets/action_button_widget.dart';
+import 'package:sense_voka/widgets/pronunciation_modal_widget.dart';
 
 import '../enums/app_enums.dart';
 import 'callback_button_widget.dart';
-import 'check_pronunciation_button_widget.dart';
 
 class WordCard extends StatefulWidget {
   final WordBook type; //단어장 타입
@@ -40,23 +41,24 @@ class _WordCardState extends State<WordCard> {
     switch (widget.accent) {
       case 'uk':
         await tts.setLanguage("en-GB");
+        await tts.setVoice({
+          "name": "en-GB-SMTl02",
+          "locale": "eng-x-lvariant-l02",
+        });
         break;
       case 'aus':
         await tts.setLanguage("en-AU");
+        await tts.setVoice({"name": "en-AU-language", "locale": "en-AU"});
         break;
       default:
         await tts.setLanguage("en-US");
+        await tts.setVoice({"name": "en-us-x-tpf-local", "locale": "en-US"});
+        await tts.setSpeechRate(0.5);
     }
 
     await tts.setVolume(1.0);
     await tts.setPitch(1.0);
     await tts.stop();
-
-    //목소리 설정
-    await tts.setVoice({
-      "name": "en-GB-SMTl02",
-      "locale": "eng-x-lvariant-l02",
-    });
 
     await tts.speak(", $text"); //, 를 통해 첫 음절 무시 현상 제거
   }
@@ -318,13 +320,24 @@ class _WordCardState extends State<WordCard> {
             //버튼
             Column(
               children: [
-                //발음 교정 버튼
-                checkPronunciationButton(
-                  context: context,
-                  word: widget.word,
+                ActionButtonWidget(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      context: context,
+                      builder:
+                          (context) =>
+                              PronunciationModalWidget(word: widget.word),
+                    );
+                  },
+                  paddingHorizontal: 57,
+                  paddingVertical: 3,
+                  borderSide: 2,
+                  borderRadius: 15,
                   text: "발 음 교 정",
-                  bWidth: 290,
-                  bHeight: 60,
+                  fontSize: 33,
+                  fontWeight: FontWeight.w800,
                 ),
                 SizedBox(height: 10),
                 CallbackButtonWidget(

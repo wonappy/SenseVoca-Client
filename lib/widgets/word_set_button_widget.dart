@@ -96,7 +96,8 @@ class WordSetButton extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () async {
+            padding: EdgeInsets.all(0),
+             onPressed: () async {
               final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
