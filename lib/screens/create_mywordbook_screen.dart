@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_preview_model.dart';
 import 'package:sense_voka/widgets/show_dialog_widget.dart';
@@ -15,6 +16,14 @@ class CreateMywordbookScreen extends StatefulWidget {
 
 class _CreateMywordbookScreenState extends State<CreateMywordbookScreen> {
   final titleController = TextEditingController(); //단어장 명
+
+  @override
+  initState() {
+    super.initState();
+    if (kDebugMode) {
+      print("단어 내용 : ${widget.wordsInfo}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
