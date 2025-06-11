@@ -36,7 +36,7 @@ class WordPreviewModel {
       meaning = json['meaning'],
       type = WordBook.basic;
 
-  //랜덤 단어장 api용
+  //즐겨찾기 단어장 api용
   WordPreviewModel.fromFavoriteWordJson(Map<String, dynamic> json)
     : wordId = json['wordId'],
       word = json['word'],
