@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/user_model.dart';
 import 'package:sense_voka/models/user_status_model.dart';
@@ -97,9 +96,8 @@ class _MainScreenState extends State<MainScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-
                         Text(
-                          "${widget.user.name}",
+                          widget.user.name,
                           style: TextStyle(
                             color: Colors.black,
                             fontSize: 30,

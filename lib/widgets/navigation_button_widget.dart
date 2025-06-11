@@ -6,7 +6,7 @@ class NavigationButtonWidget extends StatelessWidget {
   final double bHeight;
   final double? fontSize;
   final bool? popBeforePush;
-
+  final VoidCallback? onPopped;
   //버튼을 눌렀을 때 이동할 공간
   final Widget destinationScreen;
 
@@ -17,6 +17,7 @@ class NavigationButtonWidget extends StatelessWidget {
     required this.bHeight,
     this.fontSize,
     this.popBeforePush,
+    this.onPopped,
     required this.destinationScreen,
   });
 
@@ -28,13 +29,18 @@ class NavigationButtonWidget extends StatelessWidget {
           Navigator.pop(context);
         }
 
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => destinationScreen,
             fullscreenDialog: true,
           ),
         );
+
+        //pop 콜백함수가 있다면, 실행
+        if (onPopped != null) {
+          onPopped!();
+        }
       },
       style: ButtonStyle(
         animationDuration: Duration.zero, //foregroundColor 글자 색상 변경 애니메이션 제거

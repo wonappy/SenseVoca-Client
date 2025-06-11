@@ -553,7 +553,12 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.all(10.0),
+                            padding: const EdgeInsets.only(
+                              top: 10.0,
+                              left: 10.0,
+                              right: 10.0,
+                              bottom: 2,
+                            ),
                             child: Column(
                               children: [
                                 SizedBox(
@@ -628,8 +633,12 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
                                           }
                                         });
                                       },
-                                      paddingHorizontal: 10,
-                                      paddingVertical: 5,
+                                      bWidth:
+                                          MediaQuery.of(context).size.width *
+                                          0.34,
+                                      bHeight:
+                                          MediaQuery.of(context).size.height *
+                                          0.05,
                                       text: "점수 자세히 보기",
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,
@@ -647,8 +656,12 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
                                           }
                                         });
                                       },
-                                      paddingHorizontal: 10,
-                                      paddingVertical: 5,
+                                      bWidth:
+                                          MediaQuery.of(context).size.width *
+                                          0.34,
+                                      bHeight:
+                                          MediaQuery.of(context).size.height *
+                                          0.05,
                                       text: "다시 발음하기",
                                       fontSize: 15,
                                       fontWeight: FontWeight.w800,

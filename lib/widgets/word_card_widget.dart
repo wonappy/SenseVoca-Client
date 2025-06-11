@@ -331,8 +331,8 @@ class _WordCardState extends State<WordCard> {
                               PronunciationModalWidget(word: widget.word),
                     );
                   },
-                  paddingHorizontal: 57,
-                  paddingVertical: 3,
+                  bWidth: 290,
+                  bHeight: 60,
                   borderSide: 2,
                   borderRadius: 15,
                   text: "발 음 교 정",

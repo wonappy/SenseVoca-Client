@@ -390,15 +390,15 @@ class _CreateRandomWordBookScreenState
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
-                  vertical: 15,
+                  vertical: 8,
                 ),
                 child:
                     isInitial
                         ? Center(
                           child: ActionButtonWidget(
                             onPressed: exitInitialState,
-                            paddingHorizontal: 15,
-                            paddingVertical: 5,
+                            bWidth: MediaQuery.of(context).size.width * 0.47,
+                            bHeight: MediaQuery.of(context).size.height * 0.05,
                             fontSize: 25,
                             foregroundColor: Colors.white,
                             backgroundColor: Color(0xFFFF983D),
@@ -415,8 +415,10 @@ class _CreateRandomWordBookScreenState
                               children: [
                                 ActionButtonWidget(
                                   onPressed: selectAllWordCards,
-                                  paddingHorizontal: 15,
-                                  paddingVertical: 5,
+                                  bWidth:
+                                      MediaQuery.of(context).size.width * 0.23,
+                                  bHeight:
+                                      MediaQuery.of(context).size.height * 0.04,
                                   foregroundColor: Color(0xFFFF983D),
                                   fontSize: 15,
                                   borderSide: 2,
@@ -427,8 +429,10 @@ class _CreateRandomWordBookScreenState
                                 SizedBox(width: 10),
                                 ActionButtonWidget(
                                   onPressed: deselectAllWordCards,
-                                  paddingHorizontal: 15,
-                                  paddingVertical: 5,
+                                  bWidth:
+                                      MediaQuery.of(context).size.width * 0.3,
+                                  bHeight:
+                                      MediaQuery.of(context).size.height * 0.04,
                                   foregroundColor: Color(0xFFFF983D),
                                   fontSize: 15,
                                   borderSide: 2,
@@ -472,8 +476,9 @@ class _CreateRandomWordBookScreenState
                               alignment: Alignment.bottomRight,
                               child: ActionButtonWidget(
                                 onPressed: () => _showPickCountOverlay(context),
-                                paddingHorizontal: 15,
-                                paddingVertical: 5,
+                                bWidth: MediaQuery.of(context).size.width * 0.4,
+                                bHeight:
+                                    MediaQuery.of(context).size.height * 0.04,
                                 foregroundColor: Colors.white,
                                 backgroundColor: Color(0xFFFF983D),
                                 borderRadius: 12,
