@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sense_voka/screens/create_mywordcard_screen.dart';
@@ -5,11 +6,13 @@ import 'package:sense_voka/screens/sign_in_screen.dart';
 import 'package:sense_voka/widgets/show_dialog_widget.dart';
 
 import '../models/word_book_info_model.dart';
+import '../services/users_service.dart';
 import '../widgets/show_confirm_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
 
 class SettingAccountScreen extends StatefulWidget {
-  SettingAccountScreen({super.key});
+  final int id;
+  SettingAccountScreen({super.key, required this.id});
 
   static final storage = FlutterSecureStorage();
 
@@ -112,8 +115,45 @@ class _SettingAccountScreenState extends State<SettingAccountScreen> {
             InkWell(
               splashColor: Color(0xFFFF983D),
               highlightColor: Color(0xFFFFE4CA),
-              onTap: () {
+              onTap: () async {
                 // 이벤트 처리
+                final navigator = Navigator.of(context);
+
+                // [창 출력] 회원 탈퇴 하시겠습니까?
+                final result = await showConfirmDialogWidget(
+                    context: context,
+                    title: "회원 탈퇴",
+                    msg: "회원 탈퇴 하시겠습니까?");
+
+                if (result != null && result == true) {
+                  try {
+                    // 1) API 호출 : 회원 탈퇴 요청
+                    final result = await UsersService.deleteUser(id: widget.id);
+
+                    if (result.isSuccess) {
+                      // 2) 로컬 저장소 모든 데이터 삭제
+                      await SettingAccountScreen.storage.deleteAll();
+
+                      // 3) 로그인 화면으로 이동
+                      navigator.pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => SignInScreen()),
+                              (route) => false
+                      );
+                    } else {
+                      // 실패
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(result.msg ?? "회원 탈퇴에 실패했습니다.")),
+                      );
+                    }
+                  } catch (e) {
+                    if (kDebugMode) {
+                      print("회원 탈퇴 에러 : $e");
+                    }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('오류가 발생했습니다.')),
+                    );
+                  }
+                }
               },
               child: ListTile(
                 visualDensity: VisualDensity(horizontal: 0, vertical: -2),
