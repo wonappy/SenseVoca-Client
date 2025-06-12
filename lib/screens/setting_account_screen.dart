@@ -12,7 +12,7 @@ import '../widgets/textfield_line_widget.dart';
 
 class SettingAccountScreen extends StatefulWidget {
   final int id;
-  SettingAccountScreen({super.key, required this.id});
+  const SettingAccountScreen({super.key, required this.id});
 
   static final storage = FlutterSecureStorage();
 

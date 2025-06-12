@@ -9,6 +9,7 @@ import 'package:sense_voka/widgets/action_button_widget.dart';
 import 'package:sense_voka/widgets/pronunciation_modal_widget.dart';
 
 import '../enums/app_enums.dart';
+import '../styles/english_example_sentence_style.dart';
 import 'callback_button_widget.dart';
 
 class WordCard extends StatefulWidget {
@@ -36,31 +37,76 @@ class WordCard extends StatefulWidget {
 class _WordCardState extends State<WordCard> {
   final FlutterTts tts = FlutterTts(); //tts 호출
 
+  Future<void> checkAvailableVoices() async {
+    final voices = await tts.getVoices;
+    for (var voice in voices) {
+      print('Voice: ${voice['name']}, Locale: ${voice['locale']}');
+    }
+  }
+
   //tts 설정
   Future _speak(String text) async {
-    switch (widget.accent) {
-      case 'uk':
-        await tts.setLanguage("en-GB");
-        await tts.setVoice({
-          "name": "en-GB-SMTl02",
-          "locale": "eng-x-lvariant-l02",
-        });
-        break;
-      case 'aus':
-        await tts.setLanguage("en-AU");
-        await tts.setVoice({"name": "en-AU-language", "locale": "en-AU"});
-        break;
-      default:
-        await tts.setLanguage("en-US");
-        await tts.setVoice({"name": "en-us-x-tpf-local", "locale": "en-US"});
-        await tts.setSpeechRate(0.5);
+    print("현재 tts 국가 : ${widget.accent}");
+
+    try {
+      // 먼저 TTS 완전히 중지하고 초기화
+      await tts.stop();
+      await Future.delayed(Duration(milliseconds: 100));
+
+      // 현재 음성 확인 (디버깅용)
+      final currentVoice = await tts.getDefaultVoice;
+      print("설정 전 현재 음성: $currentVoice");
+
+      switch (widget.accent) {
+        case 'uk':
+          print("영국 음성으로 설정 중...");
+          await tts.setLanguage("en-GB");
+          await Future.delayed(Duration(milliseconds: 50));
+
+          await tts.setVoice({
+            "name": "en-GB-SMTl02",
+            "locale": "eng-x-lvariant-l02",
+          });
+          break;
+
+        case 'aus':
+          print("호주(영국 대체) 음성으로 설정 중...");
+          await tts.setLanguage("en-GB");
+          await Future.delayed(Duration(milliseconds: 50));
+
+          await tts.setVoice({
+            "name": "en-GB-SMTg02",
+            "locale": "eng-x-lvariant-g02",
+          });
+          break;
+
+        default: // US
+          print("미국 음성으로 설정 중...");
+          await tts.setLanguage("en-US");
+          await Future.delayed(Duration(milliseconds: 50));
+
+          await tts.setVoice({
+            "name": "en-US-SMTl03",
+            "locale": "eng-x-lvariant-l03",
+          });
+      }
+
+      // 설정 후 음성 확인 (디버깅용)
+      await Future.delayed(Duration(milliseconds: 100));
+      final newVoice = await tts.getDefaultVoice;
+      print("설정 후 현재 음성: $newVoice");
+
+      // TTS 기본 설정
+      await tts.setVolume(1.0);
+      await tts.setPitch(1.0);
+      await tts.setSpeechRate(0.5);
+
+      // 충분한 대기 시간 후 음성 출력
+      await Future.delayed(Duration(milliseconds: 200));
+      await tts.speak(text);
+    } catch (e) {
+      print("TTS 에러: $e");
     }
-
-    await tts.setVolume(1.0);
-    await tts.setPitch(1.0);
-    await tts.stop();
-
-    await tts.speak(", $text"); //, 를 통해 첫 음절 무시 현상 제거
   }
 
   //api 호출 상태 -> t: 로딩 중, f: 호출 완료
@@ -230,7 +276,12 @@ class _WordCardState extends State<WordCard> {
                       ),
                     ),
                     Text(
-                      widget.word.pronunciation,
+                      widget.word.pronunciation.replaceAllMapped(
+                        RegExp(r'/([^/]+)/'),
+                        (match) {
+                          return '[${match.group(1)}]';
+                        },
+                      ), // /aa/ -> [aa]로 변환
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w400,
@@ -305,9 +356,9 @@ class _WordCardState extends State<WordCard> {
                         softWrap: true,
                         overflow: TextOverflow.visible,
                         text: TextSpan(
-                          children: exampleSentenceStyle(
+                          children: englishExampleSentenceStyle(
                             widget.word.exampleSentenceEn,
-                            false,
+                            widget.word.word,
                           ),
                         ),
                       ),

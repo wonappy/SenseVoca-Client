@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sense_voka/core/global_variables.dart';
 import 'package:sense_voka/models/request_models/word_id_type_model.dart';
 import 'package:sense_voka/services/basic_service.dart';
 import 'package:sense_voka/services/users_service.dart';
@@ -33,7 +34,7 @@ class WordStudyScreen extends StatefulWidget {
 class _WordStudyScreenState extends State<WordStudyScreen>
     with TickerProviderStateMixin {
   //발음 국가 설정
-  String accent = Country.us.name;
+  String accent = voiceCountry.name;
 
   int wordCount = -1; //구간 내 단어 개수
 

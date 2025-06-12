@@ -1,10 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sense_voka/models/user_model.dart';
 import 'package:sense_voka/models/user_status_model.dart';
 import 'package:sense_voka/screens/essential_wordbook_screen.dart';
 import 'package:sense_voka/screens/main_wordbook_screen.dart';
 import 'package:sense_voka/screens/setting_account_screen.dart';
+import 'package:sense_voka/screens/setting_country_screen.dart';
+import 'package:sense_voka/screens/setting_goal_screen.dart';
 
 import '../enums/app_enums.dart';
 import '../services/users_service.dart';
@@ -21,7 +24,31 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  late Future<UserStatusModel> _userStatusFuture;
+
+  static final storage = FlutterSecureStorage();
+  late String studyGoal;
+  
+    late Future<UserStatusModel> _userStatusFuture;
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStudyGoal();
+        _userStatusFuture = _getUserStatus();
+  }
+
+  //학습 목표 가져오기
+  Future<void> _loadStudyGoal() async {
+    String? value = await storage.read(key: "StudyGoal");
+    setState(() {
+      studyGoal = value ?? "100";
+      isLoading = false;
+       });
+  }
+
+
 
   Future<UserStatusModel> _getUserStatus() async {
     var result = await UsersService.getUserStatus();
@@ -42,14 +69,11 @@ class _MainScreenState extends State<MainScreen> {
     return UserStatusModel(todayCount: 0, streakDays: 0);
   }
 
-  @override
-  void initState() {
-    _userStatusFuture = _getUserStatus();
-  }
 
   void _refreshUserStatus () {
     setState((){
       _userStatusFuture = _getUserStatus();
+
     });
   }
 
@@ -159,7 +183,9 @@ class _MainScreenState extends State<MainScreen> {
                     MaterialPageRoute(
                       builder: (context) => SettingAccountScreen(id: widget.user.userId),
                     ),
-                  );
+                  ).then((_) {
+                    _loadStudyGoal();
+                  });
                 },
                 child: ListTile(
                   title: Text(
@@ -170,49 +196,67 @@ class _MainScreenState extends State<MainScreen> {
                   trailing: Icon(Icons.arrow_forward_ios),
                 ),
               ),
+              // Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
+              // InkWell(
+              //   splashColor: Color(0xFFFF983D),
+              //   highlightColor: Color(0xFFFFE4CA),
+              //   onTap: () {
+              //     // 이벤트 처리
+              //   },
+              //   child: ListTile(
+              //     title: Text(
+              //       "언어",
+              //       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              //     ),
+              //     subtitle: Text("기본 언어 설정"),
+              //     trailing: Icon(Icons.arrow_forward_ios),
+              //   ),
+              // ),
               Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
               InkWell(
                 splashColor: Color(0xFFFF983D),
                 highlightColor: Color(0xFFFFE4CA),
                 onTap: () {
-                  // 이벤트 처리
-                },
-                child: ListTile(
-                  title: Text(
-                    "언어",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text("기본 언어 설정"),
-                  trailing: Icon(Icons.arrow_forward_ios),
-                ),
-              ),
-              Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
-              InkWell(
-                splashColor: Color(0xFFFF983D),
-                highlightColor: Color(0xFFFFE4CA),
-                onTap: () {
-                  // 이벤트 처리
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingCountryScreen(),
+                    ),
+                  ).then((_) {
+                    _loadStudyGoal();
+                  });
                 },
                 child: ListTile(
                   title: Text(
                     "음성",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  subtitle: Text("음성 속도 및 크기  |  발음 인식 수준"),
+                  subtitle: Text("원어민 발음 설정"),
                   trailing: Icon(Icons.arrow_forward_ios),
                 ),
               ),
               Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
-              ListTile(
-                title: Text(
-                  "단어 학습",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("1일 학습 목표  |  퀴즈 복습 단어 저장"),
-                trailing: Icon(Icons.arrow_forward_ios),
+              InkWell(
+                splashColor: Color(0xFFFF983D),
+                highlightColor: Color(0xFFFFE4CA),
                 onTap: () {
-                  // 단어 학습 설정 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SettingGoalScreen(),
+                    ),
+                  ).then((_) {
+                    _loadStudyGoal();
+                  });
                 },
+                child: ListTile(
+                  title: Text(
+                    "단어 학습",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text("1일 학습 목표 설정"),
+                  trailing: Icon(Icons.arrow_forward_ios),
+                ),
               ),
               Divider(color: Color(0xFFFF983D), thickness: 2.0, height: 8.0),
             ],
@@ -220,94 +264,92 @@ class _MainScreenState extends State<MainScreen> {
         ),
       ),
 
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 사용자 프로필 및 점수
-              Container(
-                padding: EdgeInsets.all(13),
-                width: 370,
-                height: 280,
-                decoration: BoxDecoration(
-                  color: Color(0xFFFFE4CA),
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 5,
-                      offset: Offset(0, 8),
-                      color: Colors.black.withValues(alpha: 0.3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    SizedBox(height: 7),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        //CircleAvatar(radius: 40, backgroundColor: Colors.white),
-                        Container(
-                          width: 120,
-                          height: 160,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.white,
-                          ),
-                          child: Icon(
-                            Icons.person,
-                            size: 120,
-                            color: Colors.black12,
-                          ),
-                        ),
-                        SizedBox(width: 25),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '오늘 학습한 단어',
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              children: [
-                                FutureBuilder<UserStatusModel>(
-                                  future: _userStatusFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return CircularProgressIndicator();
-                                    }
-                                    
-                                    final userStatus = snapshot.data;
-                                    return Text('${userStatus?.todayCount}',
-                                      style: TextStyle(
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFFFF983D),
-                                      ),
-                                    );
-                                  },
-                                ),
-                                SizedBox(width: 10),
-                                Text(
-                                  '/ 100 개',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                              ],
+      body:
+          isLoading
+              ? Center(
+                child: CircularProgressIndicator(color: Color(0xFFFF983D)),
+              )
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 사용자 프로필 및 점수
+                      Container(
+                        padding: EdgeInsets.all(13),
+                        width: 370,
+                        height: 280,
+                        decoration: BoxDecoration(
+                          color: Color(0xFFFFE4CA),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 5,
+                              offset: Offset(0, 8),
+                              color: Colors.black.withValues(alpha: 0.3),
                             ),
                           ],
                         ),
+                        child: Column(
+                          children: [
+                            SizedBox(height: 7),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                //CircleAvatar(radius: 40, backgroundColor: Colors.white),
+                                Container(
+                                  width: 120,
+                                  height: 160,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: Colors.white,
+                                  ),
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 120,
+                                    color: Colors.black12,
+                                  ),
+                                ),
+                                SizedBox(width: 25),
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '오늘 학습한 단어',
+                                      style: TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.baseline,
+                                      textBaseline: TextBaseline.alphabetic,
+                                      children: [
+                                        Text(
+                                          '${widget.userStatus.todayCount}',
+                                          style: TextStyle(
+                                            fontSize: 50,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFFF983D),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+                                        Text(
+                                          '/ $studyGoal 개',
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.w500,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+
                       ],
                     ),
                     SizedBox(height: 25),
@@ -373,12 +415,9 @@ class _MainScreenState extends State<MainScreen> {
                   type: WordBook.favorite,
                   wordbookId: 0,
                   setName: "즐겨찾기 단어장",
+
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
+import 'package:sense_voka/core/global_variables.dart';
 import 'package:sense_voka/screens/create_mywordcard_screen.dart';
 import 'package:sense_voka/screens/create_random_wordbook_screen.dart';
 import 'package:sense_voka/services/mywordbooks_service.dart';
@@ -21,7 +23,7 @@ class MyWordBookScreen extends StatefulWidget {
 }
 
 class _MyWordBookScreenState extends State<MyWordBookScreen> {
-  //static final storage = FlutterSecureStorage();
+  static final storage = FlutterSecureStorage();
 
   //단어장 정렬 방법
   final List<String> _sortAlgorithm = ["생성 순", "최근 접근 순"];
@@ -306,7 +308,7 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       bool result = await _postMyWordBook(
         title: popResult["title"],
         words: popResult["words"],
-        country: Country.us,
+        country: voiceCountry,
       );
 
       if (result) {

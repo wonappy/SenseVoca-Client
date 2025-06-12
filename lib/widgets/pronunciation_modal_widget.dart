@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:sense_voka/core/global_variables.dart';
 import 'package:sense_voka/services/evaluatepronunciation_service.dart';
 import 'package:sense_voka/widgets/show_dialog_widget.dart';
 import '../enums/app_enums.dart';
@@ -276,7 +277,7 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
       // API 호출
       bool success = await _postEvaluatePronunciation(
         word: widget.word.word,
-        country: Country.us.name,
+        country: voiceCountry.name,
         audioFile: audioFile,
       );
 
@@ -322,7 +323,7 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
       //api 호출
       var result = await EvaluatePronunciationService.postEvaluatePronunciation(
         word: word,
-        country: Country.us.name,
+        country: voiceCountry.name,
         audioFile: audioFile,
       );
 
@@ -518,7 +519,12 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
                       ),
                     ),
                     Text(
-                      widget.word.pronunciation,
+                      widget.word.pronunciation.replaceAllMapped(
+                        RegExp(r'/([^/]+)/'),
+                        (match) {
+                          return '[${match.group(1)}]';
+                        },
+                      ),
                       style: TextStyle(
                         color: Colors.black,
                         fontWeight: FontWeight.w300,
