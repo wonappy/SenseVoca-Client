@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sense_voka/models/user_model.dart';
@@ -9,22 +10,25 @@ import 'package:sense_voka/screens/setting_country_screen.dart';
 import 'package:sense_voka/screens/setting_goal_screen.dart';
 
 import '../enums/app_enums.dart';
+import '../services/users_service.dart';
 import '../widgets/navigation_button_widget.dart';
 import 'mywordbook_screen.dart';
 
 class MainScreen extends StatefulWidget {
   final UserModel user;
-  final UserStatusModel userStatus;
 
-  const MainScreen({super.key, required this.user, required this.userStatus});
+  const MainScreen({super.key, required this.user});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
+
   static final storage = FlutterSecureStorage();
   late String studyGoal;
+  
+    late Future<UserStatusModel> _userStatusFuture;
 
   bool isLoading = true;
 
@@ -32,6 +36,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     _loadStudyGoal();
+        _userStatusFuture = _getUserStatus();
   }
 
   //학습 목표 가져오기
@@ -40,6 +45,35 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       studyGoal = value ?? "100";
       isLoading = false;
+       });
+  }
+
+
+
+  Future<UserStatusModel> _getUserStatus() async {
+    var result = await UsersService.getUserStatus();
+    if (result.isSuccess && result.data != null) {
+      try {
+        if (result.data is UserStatusModel) {
+          return result.data as UserStatusModel;
+        } else if (result.data is Map<String, dynamic>) {
+          return UserStatusModel.fromJson(result.data as Map<String, dynamic>);
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('UserStatusModel 변환 실패: $e');
+        }
+      }
+    }
+
+    return UserStatusModel(todayCount: 0, streakDays: 0);
+  }
+
+
+  void _refreshUserStatus () {
+    setState((){
+      _userStatusFuture = _getUserStatus();
+
     });
   }
 
@@ -147,7 +181,7 @@ class _MainScreenState extends State<MainScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SettingAccountScreen(),
+                      builder: (context) => SettingAccountScreen(id: widget.user.userId),
                     ),
                   ).then((_) {
                     _loadStudyGoal();
@@ -315,65 +349,73 @@ class _MainScreenState extends State<MainScreen> {
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                            SizedBox(height: 25),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.baseline,
-                              textBaseline: TextBaseline.alphabetic,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  widget.user.name,
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text(
-                                  '님, 연속 학습 ',
-                                  style: TextStyle(fontSize: 15),
-                                ),
-                                Text(
-                                  '${widget.userStatus.streakDays}',
-                                  style: TextStyle(
-                                    fontSize: 25,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                                Text('일 째입니다.', style: TextStyle(fontSize: 15)),
-                              ],
-                            ),
-                          ],
+
+                      ],
+                    ),
+                    SizedBox(height: 25),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.user.name,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 30),
-                      NavigationButtonWidget(
-                        text: "기본 제공 단어장",
-                        bHeight: 90,
-                        bWidth: 360,
-                        destinationScreen: EssentialWordBookScreen(),
-                      ),
-                      SizedBox(height: 10),
-                      NavigationButtonWidget(
-                        text: "나만의 단어장",
-                        bHeight: 90,
-                        bWidth: 360,
-                        destinationScreen: MyWordBookScreen(),
-                      ),
-                      SizedBox(height: 10),
-                      NavigationButtonWidget(
-                        text: "즐겨찾기 단어장",
-                        bHeight: 90,
-                        bWidth: 360,
-                        destinationScreen: MainWordBookScreen(
-                          type: WordBook.favorite,
-                          wordbookId: 0,
-                          setName: "즐겨찾기 단어장",
+                        Text('님, 연속 학습 ', style: TextStyle(fontSize: 15)),
+                        FutureBuilder<UserStatusModel>(
+                            future: _userStatusFuture,
+                            builder: (context, snapshot) {
+                              if(snapshot.connectionState == ConnectionState.waiting) {
+                                return CircularProgressIndicator();
+                              }
+
+                              final userStatus = snapshot.data!;
+                              return Text(
+                                '${userStatus.streakDays}',
+                                style: TextStyle(
+                                  fontSize: 25,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              );
+                            }
                         ),
-                      ),
-                    ],
-                  ),
+                        Text('일 째입니다.', style: TextStyle(fontSize: 15)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 30),
+              NavigationButtonWidget(
+                onPopped: _refreshUserStatus,
+                text: "기본 제공 단어장",
+                bHeight: 90,
+                bWidth: 360,
+                destinationScreen: EssentialWordBookScreen(),
+              ),
+              SizedBox(height: 10),
+              NavigationButtonWidget(
+                onPopped: _refreshUserStatus,
+                text: "나만의 단어장",
+                bHeight: 90,
+                bWidth: 360,
+                destinationScreen: MyWordBookScreen(),
+              ),
+              SizedBox(height: 10),
+              NavigationButtonWidget(
+                onPopped: _refreshUserStatus,
+                text: "즐겨찾기 단어장",
+                bHeight: 90,
+                bWidth: 360,
+                destinationScreen: MainWordBookScreen(
+                  type: WordBook.favorite,
+                  wordbookId: 0,
+                  setName: "즐겨찾기 단어장",
+
                 ),
               ),
     );

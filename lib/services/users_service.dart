@@ -27,15 +27,15 @@ class UsersService {
     http.Response response,
     String successMessage,
   ) {
+
     if (kDebugMode) {
       print('응답 상태코드: ${response.statusCode}');
       print('응답 본문: "${response.body}"');
     }
 
-    final result = jsonDecode(utf8.decode(response.bodyBytes)); //한글 디코딩
-
-    if (result.statusCode == 200 || result.statusCode == 204) {
-      if (result.body.isEmpty) {
+    // 성공 처리 - 응답 body X
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      if (response.body.isEmpty) {
         return ApiResponseModel(
           isSuccess: true,
           title: "성공",
@@ -45,12 +45,14 @@ class UsersService {
       }
 
       try {
-        final data = json.decode(result.body);
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+
+        // 성공 처리 - 응답 body 존재
         // fromJson 대신 직접 생성
         return ApiResponseModel(
-          isSuccess: data['isSuccess'] ?? true,
+          isSuccess: data['status'] ?? true,
           title: data['title'] ?? "성공",
-          msg: data['msg'] ?? successMessage,
+          msg: data['message'] ?? successMessage,
           data: data['data'],
         );
       } catch (e) {
@@ -58,9 +60,9 @@ class UsersService {
           print('JSON 파싱 에러: $e');
         }
         return ApiResponseModel(
-          isSuccess: true,
-          title: "성공",
-          msg: successMessage,
+          isSuccess: false,
+          title: "파싱 오류",
+          msg: '데이터 파싱 실패',
           data: null,
         );
       }
@@ -69,7 +71,7 @@ class UsersService {
     return ApiResponseModel(
       isSuccess: false,
       title: "오류 발생",
-      msg: "서버 오류: ${result.statusCode}",
+      msg: "서버 오류: ${response.statusCode}",
       data: null,
     );
   }
@@ -388,6 +390,35 @@ class UsersService {
       }
       returnMsg = ApiResponseModel(isSuccess: false, title: "오류 발생", msg: "$e");
       return (returnMsg);
+    }
+  }
+  
+  // >> 계정 관리 
+  // [DELETE] 회원 탈퇴
+  static Future<ApiResponseModel> deleteUser({required int id}) async {
+    final url = Uri.parse('$_baseUrl/$id');
+    ApiResponseModel returnMsg;
+
+    if (kDebugMode) {
+      print("deleteUser 호출");
+    }
+
+    try {
+      final headers = await _getHeaders(); // 헤더, 요청
+      final response = await http.delete(url, headers: headers);
+
+      return _handleResponse(response, "회원 탈퇴 성공");
+    } catch (e) {
+      if (kDebugMode) {
+        print("deleteUser 에러 : $e");
+      }
+
+      return returnMsg = ApiResponseModel(
+          isSuccess: false,
+          title: "오류 발생",
+          msg: "네트워크 오류가 발생했습니다.",
+          data: null
+      );
     }
   }
 
