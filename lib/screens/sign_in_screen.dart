@@ -9,6 +9,7 @@ import 'package:sense_voka/screens/sign_up_screen.dart';
 import 'package:sense_voka/services/inital_data_service.dart';
 import 'package:sense_voka/services/users_service.dart';
 
+import '../enums/app_enums.dart';
 import '../models/user_model.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
@@ -42,7 +43,9 @@ class _SignInScreenState extends State<SignInScreen> {
         if (statusResult.data is UserStatusModel) {
           return statusResult.data as UserStatusModel;
         } else if (statusResult.data is Map<String, dynamic>) {
-          return UserStatusModel.fromJson(statusResult.data as Map<String, dynamic>);
+          return UserStatusModel.fromJson(
+            statusResult.data as Map<String, dynamic>,
+          );
         }
       } catch (e) {
         if (kDebugMode) {
@@ -81,6 +84,14 @@ class _SignInScreenState extends State<SignInScreen> {
               accessToken: accessToken,
             );
 
+            var loadCountry = await storage.read(key: "Country");
+            if (loadCountry != null) {
+              voiceCountry = Country.values.byName(loadCountry);
+            }
+            if (kDebugMode) {
+              print("설정 음성 가져오기 : $voiceCountry");
+            }
+
             //자동 로그인
             if (mounted) {
               //검색 단어 목록 초기화
@@ -90,7 +101,9 @@ class _SignInScreenState extends State<SignInScreen> {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MainScreen(user: user, userStatus: userStatus),
+                  builder:
+                      (context) =>
+                          MainScreen(user: user, userStatus: userStatus),
                   fullscreenDialog: true,
                 ),
               );
@@ -131,6 +144,14 @@ class _SignInScreenState extends State<SignInScreen> {
     //api 호출
     var (result, user) = await UsersService.postSignIn(email: email, pw: pw);
 
+    var loadCountry = await storage.read(key: "Country");
+    if (loadCountry != null) {
+      voiceCountry = Country.values.byName(loadCountry);
+    }
+    if (kDebugMode) {
+      print("설정 음성 가져오기 : $voiceCountry");
+    }
+
     if (mounted) {
       //await 이후 context를 사용하고자 할 때에는 context가 dispose될 때를 대비해 경고가 출력될 수 있음.
       if (result.isSuccess && user != null) {
@@ -151,7 +172,8 @@ class _SignInScreenState extends State<SignInScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => MainScreen(user: user, userStatus: userStatus),
+              builder:
+                  (context) => MainScreen(user: user, userStatus: userStatus),
               fullscreenDialog: true,
             ),
           );

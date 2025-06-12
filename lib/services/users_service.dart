@@ -6,6 +6,7 @@ import 'package:sense_voka/models/api_response.dart';
 import 'package:sense_voka/models/user_model.dart';
 
 import '../core/global_variables.dart';
+import '../enums/app_enums.dart';
 
 class UsersService {
   // Create storage
@@ -222,7 +223,8 @@ class UsersService {
         //토큰 로컬 저장
         await storage.write(key: "AccessToken", value: data['accessToken']);
         await storage.write(key: "RefreshToken", value: data['refreshToken']);
-
+        await storage.write(key: "Country", value: Country.us.name); //기본 언어 설정
+        await storage.write(key: "StudyGoal", value: "100"); //기본 학습 목표 설정
         final userJson = jsonEncode({
           'userId': user.userId,
           'email': user.email,

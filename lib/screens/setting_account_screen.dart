@@ -9,7 +9,7 @@ import '../widgets/show_confirm_dialog_widget.dart';
 import '../widgets/textfield_line_widget.dart';
 
 class SettingAccountScreen extends StatefulWidget {
-  SettingAccountScreen({super.key});
+  const SettingAccountScreen({super.key});
 
   static final storage = FlutterSecureStorage();
 
