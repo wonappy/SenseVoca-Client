@@ -552,7 +552,7 @@ class _PronunciationModalWidgetState extends State<PronunciationModalWidget> {
                     ? Column(
                       children: [
                         Container(
-                          height: MediaQuery.of(context).size.height * 0.4,
+                          height: MediaQuery.of(context).size.height * 0.41,
                           width: MediaQuery.of(context).size.width * 0.8,
                           decoration: BoxDecoration(
                             color: Color(0xFFFFDBBC),
