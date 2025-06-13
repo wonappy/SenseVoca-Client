@@ -229,7 +229,7 @@ class _WordCardState extends State<WordCard> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 21, vertical: 20),
+        padding: EdgeInsets.symmetric(horizontal: 21, vertical: 10),
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
