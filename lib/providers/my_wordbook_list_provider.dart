@@ -1,65 +1,110 @@
 import 'package:flutter/material.dart';
 
+import '../core/global_variables.dart';
 import '../models/word_book_info_model.dart';
+import '../models/word_preview_model.dart';
+import '../services/mywordbooks_service.dart';
+import '../styles/error_snack_bar_style.dart';
+import '../widgets/show_dialog_widget.dart';
 
 class MyWordbookListProvider with ChangeNotifier {
-  List<WordBookInfoModel> wordSets = [
-    WordBookInfoModel(
-      wordBookId: 1,
-      title: "나만의 단어장 1",
-      wordCount: 45,
-      createDate: DateTime(2025, 3, 4, 11, 20),
-      lastAccess: DateTime(2025, 3, 4, 11, 23),
-    ),
-    WordBookInfoModel(
-      wordBookId: 2,
-      title: "나만의 단어장 2",
-      wordCount: 37,
-      createDate: DateTime(2025, 3, 4, 11, 21),
-      lastAccess: DateTime(2025, 3, 5, 21, 6),
-    ),
-    WordBookInfoModel(
-      wordBookId: 3,
-      title: "나만의 단어장 3",
-      wordCount: 21,
-      createDate: DateTime(2025, 3, 5, 14, 21),
-      lastAccess: DateTime(2025, 3, 7, 21, 33),
-    ),
-    WordBookInfoModel(
-      wordBookId: 4,
-      title: "나만의 단어장 4",
-      wordCount: 78,
-      createDate: DateTime(2025, 3, 5, 15, 11),
-      lastAccess: DateTime(2025, 3, 5, 2, 6),
-    ),
-  ];
+  List<WordBookInfoModel> _tempWordSets = [];
+  BuildContext? _context; // 에러 처리용 context
+  VoidCallback? _onApiComplete; // API 완료 시 호출할 콜백
 
-  List<WordBookInfoModel> get _wordSets => wordSets;
+  List<WordBookInfoModel> get wordSets => _tempWordSets;
+
+  // Context와 콜백 설정
+  void setContext(BuildContext context, VoidCallback onApiComplete) {
+    _context = context;
+    _onApiComplete = onApiComplete;
+  }
 
   //단어장 생성 api 호출 중 임시 버튼 생성
-  void addWordSet(WordBookInfoModel wordSet) {
-    wordSets.add(wordSet);
+  int addWordSet({
+    required String title,
+    required List<WordPreviewModel> words,
+  }) {
+    // 임시 ID 생성
+    int tempId = DateTime.now().millisecondsSinceEpoch;
+
+    final tempWordbook = WordBookInfoModel(
+      wordBookId: tempId,
+      title: title,
+      wordCount: words.length,
+      createDate: DateTime.now(),
+      lastAccess: DateTime.now(),
+      isLoading: true,
+    );
+
+    _tempWordSets.add(tempWordbook);
     notifyListeners(); //상태 변경 알림 -> UI 업데이트
+
+    // 백그라운드에서 API 호출
+    _postWordbook(tempId, title, words);
+
+    return tempId;
   }
 
-  //단어장 목록 api 재호출
-  void updateWordSet() {
-    //단어장 목록 api 호출
-    //wordSets 갱신
-  }
+  //단어장 생성 api 호출
+  Future<void> _postWordbook(
+    int tempId,
+    String title,
+    List<WordPreviewModel> words,
+  ) async {
+    try {
+      var result = await MywordbooksService.postNewMyWordBook(
+        title: title,
+        words: words,
+        country: voiceCountry.name,
+      );
 
-  //로딩 상태 갱신
-  void updateLoading(int id, bool isLoading) {
-    final index = wordSets.indexWhere((w) => w.wordBookId == id);
-    if (index != -1) {
-      wordSets[index].isLoading = isLoading;
-      notifyListeners(); //상태 변경 알림 -> UI 업데이트
+      if (result.isSuccess) {
+        // 메인 리스트 갱신 요청
+        removeWordSet(tempId);
+        _onApiComplete?.call(); // 메인 화면의 _getWordSet() 호출
+      } else {
+        // 실패시 임시 단어장 제거
+        removeWordSet(tempId);
+        _handleApiError(result);
+      }
+    } catch (e) {
+      // 임시 단어장 제거
+      removeWordSet(tempId);
+
+      debugPrint('단어장 생성 중 예외 발생: $e');
     }
   }
 
-  //단어장 삭제
+  //임시 단어장 삭제
   void removeWordSet(int id) {
-    wordSets.removeWhere((w) => w.wordBookId == id);
+    _tempWordSets.removeWhere((w) => w.wordBookId == id);
     notifyListeners(); //상태 변경 알림 -> UI 업데이트
+  }
+
+  // 모든 임시 단어장 삭제
+  void clearTempWordSets() {
+    _tempWordSets.clear();
+    notifyListeners();
+  }
+
+  // API 에러 처리
+  void _handleApiError(dynamic result) {
+    if (_context == null) return;
+
+    if (result.title == "오류 발생") {
+      ScaffoldMessenger.of(
+        _context!,
+      ).showSnackBar(errorSnackBarStyle(context: _context!, result: result));
+    } else if (result.title == "Token 재발급") {
+      // 토큰 재발급 및 재실행 과정
+      // 토큰 재발급 로직 구현!
+    } else {
+      showDialogWidget(
+        context: _context!,
+        title: result.title,
+        msg: result.msg,
+      );
+    }
   }
 }

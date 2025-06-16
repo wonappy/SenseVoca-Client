@@ -1,8 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:intl/intl.dart';
-import 'package:sense_voka/core/global_variables.dart';
+import 'package:provider/provider.dart';
 import 'package:sense_voka/screens/create_mywordcard_screen.dart';
 import 'package:sense_voka/screens/create_random_wordbook_screen.dart';
 import 'package:sense_voka/services/mywordbooks_service.dart';
@@ -11,6 +10,7 @@ import 'package:sense_voka/widgets/callback_button_widget.dart';
 import '../enums/app_enums.dart';
 import '../models/word_book_info_model.dart';
 import '../models/word_preview_model.dart';
+import '../providers/my_wordbook_list_provider.dart';
 import '../styles/error_snack_bar_style.dart';
 import '../widgets/show_dialog_widget.dart';
 import '../widgets/word_set_button_widget.dart';
@@ -23,8 +23,6 @@ class MyWordBookScreen extends StatefulWidget {
 }
 
 class _MyWordBookScreenState extends State<MyWordBookScreen> {
-  static final storage = FlutterSecureStorage();
-
   //단어장 정렬 방법
   final List<String> _sortAlgorithm = ["생성 순", "최근 접근 순"];
   String? _selectedSort = "";
@@ -37,8 +35,11 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
+    // implement initState
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<MyWordbookListProvider>().setContext(context, _getWordSet);
+    });
     setState(() {
       //나만의 단어장 리스트 가져오기
       _getWordSet();
@@ -86,110 +87,112 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
         ),
       ),
 
-      body:
-          isLoading
-              ? Center(
-                child: CircularProgressIndicator(color: Color(0xFFFF983D)),
-              )
-              : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      //상단 기본 정보 제공
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "총 ${wordSets.length}개",
-                            style: TextStyle(fontSize: 19),
-                          ),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 10),
-                            height: 35,
-                            decoration: BoxDecoration(color: Color(0xFFE8E8E8)),
-                            child: DropdownButton(
-                              dropdownColor: Color(0xFFE8E8E8),
-                              underline: SizedBox.shrink(),
-                              value: _selectedSort,
-                              items:
-                                  _sortAlgorithm
-                                      .map(
-                                        (e) => DropdownMenuItem(
-                                          value: e,
-                                          child: Text(e),
-                                        ),
-                                      )
-                                      .toList(),
-                              onChanged: (value) {
-                                setState(() {
-                                  _selectedSort = value!;
-                                  if (_selectedSort == "최근 접근 순") {
-                                    wordSets.sort(
-                                      (a, b) =>
-                                          b.lastAccess.compareTo(a.lastAccess),
-                                    );
-                                  } else if (_selectedSort == "생성 순") {
-                                    wordSets.sort(
-                                      (a, b) =>
-                                          a.createDate.compareTo(b.createDate),
-                                    );
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 20),
-                      //단어장 목록
-                      for (int i = 0; i < wordSets.length; i++)
-                        Column(
-                          children: [
-                            Stack(
-                              children: [
-                                WordSetButton(
-                                  wordbookId: wordSets[i].wordBookId,
-                                  setName: wordSets[i].title,
-                                  wordCount: wordSets[i].wordCount,
-                                  lastAccess: DateFormat(
-                                    "yyyy.MM.dd",
-                                  ).format(wordSets[i].lastAccess),
-                                  bWidth: 360,
-                                  bHeight: 90,
-                                  onWordbookChanged: () {
-                                    _getWordSet();
-                                  },
-                                ),
-                                if (wordSets[i].isLoading)
-                                  Positioned.fill(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black26,
-                                        borderRadius: BorderRadius.circular(15),
-                                      ),
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            SizedBox(height: 10),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
+      body: _buildBody(),
     );
   }
 
-  //단어 학습 화면 생성
+  Widget _buildBody() {
+    if (isLoading) {
+      return Center(child: CircularProgressIndicator(color: Color(0xFFFF983D)));
+    }
+
+    // 기존 단어장 + 임시 단어장 합치기
+    final tempWordSets = context.watch<MyWordbookListProvider>().wordSets;
+    final allWordSets = [...wordSets, ...tempWordSets];
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 상단 기본 정보 제공
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "총 ${allWordSets.length}개",
+                  style: TextStyle(fontSize: 19),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  height: 35,
+                  decoration: BoxDecoration(color: Color(0xFFE8E8E8)),
+                  child: DropdownButton(
+                    dropdownColor: Color(0xFFE8E8E8),
+                    underline: SizedBox.shrink(),
+                    value: _selectedSort,
+                    items:
+                        _sortAlgorithm
+                            .map(
+                              (e) => DropdownMenuItem(value: e, child: Text(e)),
+                            )
+                            .toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedSort = value!;
+                        if (_selectedSort == "최근 접근 순") {
+                          wordSets.sort(
+                            (a, b) => b.lastAccess.compareTo(a.lastAccess),
+                          );
+                        } else if (_selectedSort == "생성 순") {
+                          wordSets.sort(
+                            (a, b) => a.createDate.compareTo(b.createDate),
+                          );
+                        }
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            // 단어장 목록 (기존 + 임시)
+            for (int i = 0; i < allWordSets.length; i++)
+              Column(
+                children: [
+                  Stack(
+                    children: [
+                      WordSetButton(
+                        wordbookId: allWordSets[i].wordBookId,
+                        setName: allWordSets[i].title,
+                        wordCount: allWordSets[i].wordCount,
+                        lastAccess: DateFormat(
+                          "yyyy.MM.dd",
+                        ).format(allWordSets[i].lastAccess),
+                        bWidth: 360,
+                        bHeight: 90,
+                        onWordbookChanged: () {
+                          _getWordSet();
+                        },
+                      ),
+                      if (allWordSets[i].isLoading)
+                        Positioned.fill(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black26,
+                              borderRadius: BorderRadius.circular(15),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  //단어장 생성 방법
   Future<void> _reloadWordBookList() async {
     //말풍선 모달 창
     showDialog(
@@ -266,59 +269,19 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
       MaterialPageRoute(builder: (context) => destinationScreen),
     );
 
-    if (kDebugMode) {
-      print("popResult 받음: $popResult"); // 디버그 추가
-
-      // wordSet이 비어있는지 확인
-      print("wordSet 길이: ${wordSets.length}");
-    }
-
-    // 임시 단어장 Id 생성 -> eksdj
-    int tempWordBookId =
-        wordSets.isNotEmpty ? wordSets.last.wordBookId + 99 : 1;
-
     if (popResult is Map) {
       if (kDebugMode) {
-        print("Map 데이터 확인됨");
+        print("단어장 생성 데이터 받음: $popResult");
       }
 
-      //api 호출
-      //호출 결과를 기다리는 동안 표시될 버튼 UI
-      final String title = popResult["title"];
-      final words = popResult["words"];
-
-      if (kDebugMode) {
-        print("제목: $title, 단어: $words");
-      }
-
-      WordBookInfoModel newWordbook = WordBookInfoModel(
-        wordBookId: tempWordBookId, //아이디가 겹치지 않도록...
-        title: title,
-        wordCount: words.length,
-        createDate: DateTime.now(),
-        lastAccess: DateTime.now(),
-        isLoading: true,
-      );
-
-      setState(() {
-        wordSets.add(newWordbook);
-      });
-
-      //api 호출 및 결과 처리
-      bool result = await _postMyWordBook(
+      // Provider를 통해 임시 단어장 추가 (백그라운드 API 호출)
+      context.read<MyWordbookListProvider>().addWordSet(
         title: popResult["title"],
         words: popResult["words"],
-        country: voiceCountry,
       );
 
-      if (result) {
-        //success -> 단어장 목록 다시 호출
-        _getWordSet();
-      } else {
-        //fail -> 버튼 자체 삭제
-        setState(() {
-          wordSets.removeWhere((w) => w.wordBookId == tempWordBookId);
-        });
+      if (kDebugMode) {
+        print("임시 단어장 추가됨. 백그라운드에서 API 호출 중...");
       }
     }
   }
@@ -359,42 +322,42 @@ class _MyWordBookScreenState extends State<MyWordBookScreen> {
     }
   }
 
-  //나만의 단어장 생성 api
-  Future<bool> _postMyWordBook({
-    required String title,
-    required List<WordPreviewModel> words,
-    required Country country,
-  }) async {
-    //api 호출
-    var result = await MywordbooksService.postNewMyWordBook(
-      title: title,
-      words: words,
-      country: country.name,
-    );
-
-    if (mounted) {
-      if (result.isSuccess) {
-        return true;
-      } else {
-        if (result.title == "오류 발생") {
-          //오류 발생
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(errorSnackBarStyle(context: context, result: result));
-          return false;
-        } else if (result.title == "Token 재발급") {
-          //토큰 재발급 및 재실행 과정
-        } else {
-          //일반 실패 응답
-          await showDialogWidget(
-            context: context,
-            title: result.title,
-            msg: result.msg,
-          );
-          return false;
-        }
-      }
-    }
-    return false;
-  }
+  // //나만의 단어장 생성 api
+  // Future<bool> _postMyWordBook({
+  //   required String title,
+  //   required List<WordPreviewModel> words,
+  //   required Country country,
+  // }) async {
+  //   //api 호출
+  //   var result = await MywordbooksService.postNewMyWordBook(
+  //     title: title,
+  //     words: words,
+  //     country: country.name,
+  //   );
+  //
+  //   if (mounted) {
+  //     if (result.isSuccess) {
+  //       return true;
+  //     } else {
+  //       if (result.title == "오류 발생") {
+  //         //오류 발생
+  //         ScaffoldMessenger.of(
+  //           context,
+  //         ).showSnackBar(errorSnackBarStyle(context: context, result: result));
+  //         return false;
+  //       } else if (result.title == "Token 재발급") {
+  //         //토큰 재발급 및 재실행 과정
+  //       } else {
+  //         //일반 실패 응답
+  //         await showDialogWidget(
+  //           context: context,
+  //           title: result.title,
+  //           msg: result.msg,
+  //         );
+  //         return false;
+  //       }
+  //     }
+  //   }
+  //   return false;
+  // }
 }
