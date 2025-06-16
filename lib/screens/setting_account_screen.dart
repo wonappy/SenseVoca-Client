@@ -1,14 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sense_voka/screens/create_mywordcard_screen.dart';
 import 'package:sense_voka/screens/sign_in_screen.dart';
-import 'package:sense_voka/widgets/show_dialog_widget.dart';
 
-import '../models/word_book_info_model.dart';
 import '../services/users_service.dart';
 import '../widgets/show_confirm_dialog_widget.dart';
-import '../widgets/textfield_line_widget.dart';
 
 class SettingAccountScreen extends StatefulWidget {
   final int id;
@@ -121,9 +117,10 @@ class _SettingAccountScreenState extends State<SettingAccountScreen> {
 
                 // [창 출력] 회원 탈퇴 하시겠습니까?
                 final result = await showConfirmDialogWidget(
-                    context: context,
-                    title: "회원 탈퇴",
-                    msg: "회원 탈퇴 하시겠습니까?");
+                  context: context,
+                  title: "회원 탈퇴",
+                  msg: "회원 탈퇴 하시겠습니까?",
+                );
 
                 if (result != null && result == true) {
                   try {
@@ -136,8 +133,8 @@ class _SettingAccountScreenState extends State<SettingAccountScreen> {
 
                       // 3) 로그인 화면으로 이동
                       navigator.pushAndRemoveUntil(
-                          MaterialPageRoute(builder: (_) => SignInScreen()),
-                              (route) => false
+                        MaterialPageRoute(builder: (_) => SignInScreen()),
+                        (route) => false,
                       );
                     } else {
                       // 실패
@@ -149,9 +146,9 @@ class _SettingAccountScreenState extends State<SettingAccountScreen> {
                     if (kDebugMode) {
                       print("회원 탈퇴 에러 : $e");
                     }
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('오류가 발생했습니다.')),
-                    );
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('오류가 발생했습니다.')));
                   }
                 }
               },
