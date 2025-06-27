@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:sense_voka/models/word_info_model.dart';
 import 'package:sense_voka/styles/example_sentence_style.dart';
@@ -118,105 +119,17 @@ class _WordCardState extends State<WordCard> {
   @override
   void initState() {
     super.initState();
+    // 디버깅 로그 추가
+    print("[WordCard] initState 호출");
+    print("word: ${widget.word}");
+    print("word.wordId: ${widget.word?.wordId}");
+    print("word.word: ${widget.word?.word}");
+    print("word.meaning: ${widget.word?.meaning}");
+    print("word.favorite: ${widget.word?.favorite}");
+
     //즐겨찾기 상태 초기화
     favorite = widget.word.favorite;
   }
-
-  // //즐겨찾기 등록
-  // void _postToFavorites() async {
-  //   if (favorite != false) return;
-  //
-  //   //api 결과 변수
-  //   dynamic result;
-  //
-  //   //api 호출
-  //   if (widget.type == WordBook.my) {
-  //     //나만의 단어장
-  //     result = await FavoriteWordsService.postMyWordtoFavorite(
-  //       myWordMMnemonicId: widget.word.wordId,
-  //     );
-  //   } else {
-  //     //기본 단어장
-  //     // result = await FavoriteWordsService.postMyWordtoFavorite(
-  //     //   myWordMMnemonicId: widget.word.wordId,
-  //     // );
-  //   }
-  //
-  //   if (result != null) {
-  //     if (mounted) {
-  //       if (result.isSuccess) {
-  //         setState(() {
-  //           //즐겨찾기 상태 변경
-  //           favorite = true;
-  //         });
-  //       } else {
-  //         if (result.title == "오류 발생") {
-  //           //오류 발생
-  //           ScaffoldMessenger.of(context).showSnackBar(
-  //             errorSnackBarStyle(context: context, result: result),
-  //           );
-  //         } else if (result.title == "Token 재발급") {
-  //           //토큰 재발급 및 재실행 과정
-  //         } else {
-  //           //일반 실패 응답
-  //           await showDialogWidget(
-  //             context: context,
-  //             title: result.title,
-  //             msg: result.msg,
-  //           );
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-  //
-  // //즐겨찾기 해제
-  // void removeFromFavorites() async {
-  //   if (favorite != true) return;
-  //
-  //   //api 결과 변수
-  //   dynamic result;
-  //
-  //   //api 호출
-  //   if (widget.type == WordBook.my) {
-  //     //나만의 단어장
-  //     result = await FavoriteWordsService.deleteMyWordfromFavorite(
-  //       myWordMMnemonicId: widget.word.wordId,
-  //     );
-  //   } else {
-  //     //기본 단어장
-  //     // result = await FavoriteWordsService.postMyWordtoFavorite(
-  //     //   myWordMMnemonicId: widget.word.wordId,
-  //     // );
-  //   }
-  //
-  //   if (result != null) {
-  //     if (mounted) {
-  //       if (result.isSuccess) {
-  //         setState(() {
-  //           //즐겨찾기 상태 변경
-  //           favorite = false;
-  //         });
-  //       } else {
-  //         if (result.title == "오류 발생") {
-  //           //오류 발생
-  //           ScaffoldMessenger.of(context).showSnackBar(
-  //             errorSnackBarStyle(context: context, result: result),
-  //           );
-  //         } else if (result.title == "Token 재발급") {
-  //           //토큰 재발급 및 재실행 과정
-  //         } else {
-  //           //일반 실패 응답
-  //           await showDialogWidget(
-  //             context: context,
-  //             title: result.title,
-  //             msg: result.msg,
-  //           );
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
 
   @override
   void dispose() {
@@ -333,9 +246,20 @@ class _WordCardState extends State<WordCard> {
             //예문 재생성 요청 + 구분 선
             Column(
               children: [
-                Text(
-                  "이 예문이 마음에 들지 않으신가요?",
-                  style: TextStyle(color: Colors.black26, fontSize: 12),
+                RichText(
+                  text: TextSpan(
+                    text: "이 예문이 마음에 들지 않으신가요?",
+                    style: const TextStyle(
+                      color: Colors.black26,
+                      fontSize: 15,
+                      decoration: TextDecoration.underline,
+                    ),
+                    recognizer:
+                        TapGestureRecognizer()
+                          ..onTap = () {
+                            // onTap Event
+                          },
+                  ),
                 ),
                 SizedBox(height: 5),
                 Divider(color: Colors.black12, thickness: 1.0, height: 8.0),

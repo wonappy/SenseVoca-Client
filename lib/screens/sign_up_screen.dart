@@ -408,7 +408,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 50),
                       child: Row(

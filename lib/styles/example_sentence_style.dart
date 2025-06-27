@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 List<TextSpan> exampleSentenceStyle(String text, bool isMnemonic) {
   final RegExp pattern =
       isMnemonic
-          ? RegExp(r'(\[[^\]]+\]|<[^>]+>|\([^)]+\))') // [] or <> or ()
-          : RegExp(r'\[[^\]]+\]'); // only [] if not mnemonic
+          ? RegExp(r'(\[[^\]]+\]|<[^>]+>|＜[^＞]+＞|\([^)]+\))')
+          : RegExp(r'\[[^\]]+\]');
 
   final List<TextSpan> spans = [];
   int start = 0;
@@ -20,22 +20,23 @@ List<TextSpan> exampleSentenceStyle(String text, bool isMnemonic) {
     }
 
     final matchedText = match.group(0)!;
-    final content = matchedText.substring(1, matchedText.length - 1); // 괄호 제거
+    final content = matchedText.substring(1, matchedText.length - 1);
 
     TextStyle style;
 
     if (matchedText.startsWith('[')) {
-      // 발음
       style = TextStyle(
         fontSize: isMnemonic ? 18 : 16,
         color: Color(0xFFFF983D),
         fontWeight: isMnemonic ? FontWeight.w800 : FontWeight.normal,
       );
-    } else if (matchedText.startsWith('<')) {
-      // 의미 강조
-      style = TextStyle(fontSize: 16, color: Colors.blueAccent);
+    } else if (matchedText.startsWith('<') || matchedText.startsWith('＜')) {
+      style = TextStyle(
+        fontSize: 18,
+        color: Colors.blueAccent,
+        fontWeight: FontWeight.bold,
+      );
     } else {
-      // () → 회색 + 작은 폰트
       style = TextStyle(fontSize: 13, color: Colors.grey);
     }
 

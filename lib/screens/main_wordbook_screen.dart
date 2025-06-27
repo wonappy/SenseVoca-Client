@@ -225,6 +225,7 @@ class _MainWordBookScreenState extends State<MainWordBookScreen> {
       //인덱스 리스트 캐스팅!!
       final List<dynamic> rawList = sectionInfo['wordList'];
       final retryWordList = rawList.cast<WordIdTypeModel>(); //int로 형 변환
+      debugPrint("$retryWordList");
 
       await _createNewStudyScreen(
         type: widget.type,
