@@ -41,7 +41,7 @@ class WordInfoModel {
   //BasicWord api용
   WordInfoModel.fromBasicWordJson(Map<String, dynamic> json)
     : type = WordBook.basic,
-      wordId = json['basicWordId'],
+      wordId = json['daywordId'],
       word = json['word'],
       meaning = json['meaning'],
       pronunciation = json['phonetic'],

@@ -3,7 +3,7 @@ import 'package:sense_voka/models/word_preview_model.dart';
 
 import '../enums/app_enums.dart';
 
-const String baseUrl = "http://10.101.221.65:8080/api/";
+const String baseUrl = "http://10.101.25.119:8080/api/";
 
 //검색용 단어 정보 리스트 -> 앱 시작 시 초기화
 late final List<WordPreviewModel> wordSearchList;
